@@ -19,7 +19,14 @@ $svn = new Svn($fs, $config);
 $ftp = new Ftp($fs, $config);
 
 $rVer = $ftp->getCurrentVersion();
-$sVer = $svn->getCurrentVersion();
+
+if(sizeOf($argv) > 1) {
+	$sVer = $argv[1];
+} else {
+	$sVer = $svn->getCurrentVersion();
+}
+
+
 
 if ($config['debug'])
 {
@@ -27,17 +34,17 @@ if ($config['debug'])
 	exit;
 }
 
-if ($sVer > $rVer)
+if ($sVer != $rVer)
 {
-    $changes = $svn->checkoutChanges($rVer);
+    $changes = $svn->checkoutChanges($sVer, $rVer);
     
-    echo "\r\n\r\n[ Found " . (count($changes)) . " changes to upload. ]\r\n\r\n";
+    echo "\r\n\r\n[ Found " . (count($changes['files'])) . " changes to upload. ]\r\n\r\n";
     
     // Create a .ver file
     $fs->addSvnVersion($sVer);
     
-    $changes[] = $config['svn_subfolder'].$config['version_file'];
-    
+    $changes['files'][] = $config['svn_subfolder'].$config['version_file'];
+
     $ftp->putChanges($changes);
 }
 else

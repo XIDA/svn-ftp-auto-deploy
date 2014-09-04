@@ -43,7 +43,7 @@ class Ftp
 	    
 	    $this->log('PWD is: '.ftp_pwd($conn_id));
 	    
-        $filepath = substr($this->config['version_file'], 1);
+        $filepath = $this->config['version_file'];
         // $this->config['ftp_root'].'  '.$this->config['version_file']
 	    $this->log('Attempt GET: '.$filepath);
 	    
@@ -65,32 +65,44 @@ class Ftp
         return $data;
     }
     
+	private function getSourceForFile($change) {
+		$source = str_replace($this->config['svn_root'], "", $change);	
+	    $source = $this->fs->getTempFolder() . str_replace('/','\\', $source);
+		$source = str_replace('\\','\\\\', $source);	
+		return $source;
+	}
+		
+	private function getDestinationForFile($change) {
+		return str_replace($this->config['svn_root'], "", $change);	
+	}
+				
     public function putChanges($changes)
     {
         $conn_id = $this->ftpGetConnection();
         //echo ftp_pwd($conn_id);exit;
         
-        foreach($changes as $change)
+        foreach($changes['files'] as $change)
         {
 	        // We want to strip the svn's subfolder from the change.
 	        // because that subfolder is exported to the $temp folder.
-	        $source = substr($change, strlen($this->config['svn_subfolder'])+1);
-	        $source = $this->fs->getTempFolder() . str_replace('/','\\', $source);
-            $source = str_replace('\\','\\\\', $source);
-            
+			$source = $this->getSourceForFile($change);
+
             // The ftp destination directory.
-            $destination = $this->config['ftp_root'] . substr($change, strlen($this->config['svn_subfolder']));
-            
+            $destination = $this->getDestinationForFile($change);
+			echo '--->DEST1: ' . $destination . '<--' . PHP_EOL;
+			
             $this->ftpGoDir($conn_id, dirname($destination));
             
+			echo 'source: ' . $source . PHP_EOL;
             if (is_dir($source))
             {
+				echo 'this is a dir, nothing to do' . PHP_EOL;
                 // There was a change in folder attributes...?
                 // "goDir" will create the directory at least.
                 // Upload would fail.
                 continue;
             }
-            
+ 
             //echo $dir;
             //echo ftp_pwd($conn_id) . '<br />';
             //echo ftp_chdir($conn_id, $dir) . '<br />';
@@ -103,7 +115,7 @@ class Ftp
 			$this->log('Destination: '.$source);
 			
             $upload = ftp_put($conn_id, $destination, $source, FTP_BINARY); 
-            
+
             //var_dump($upload, $change, $destination, $source);
             
             // check upload status
@@ -134,8 +146,19 @@ class Ftp
                 //echo "Uploaded $source to $destination <br />";
                 echo "Up: $destination \r\n";
             }
-        }
-        
+        }        
+		
+		
+		foreach($changes['delFiles'] as $change) {
+            $destination = $this->getDestinationForFile($change);
+			//e cho '--->DEST DEL: ' . $destination . '<--' . PHP_EOL;
+			
+			$source = $this->getSourceForFile($change);
+
+			$this->ftpRecursiveDelete($conn_id, $destination);
+            			
+		}
+		die;
         
         // close the FTP stream 
         ftp_close($conn_id); 
@@ -152,7 +175,10 @@ class Ftp
         {
             //var_dump(ftp_pwd($conn_id));
             //var_dump($dir, $current, $part);
-            
+            //e cho 'part: ' . $part . PHP_EOL;
+			// without this an empty directory \ will be created
+			if($part == "\\") { continue; }
+			
             $current .= $part . '/';
             // Try to navigate
             if (@ftp_chdir($conn_id, $current))
@@ -164,9 +190,65 @@ class Ftp
             ftp_mkdir($conn_id, $current);
             ftp_chdir($conn_id, $current);
         }
-    }
-    
-    
+    }     
+
+	function hasSuffix($filename, $suffix) {
+		$extLength = 4;		
+		$strpos = strpos($filename, $suffix);
+		
+		if($strpos == (strlen($filename) - strlen($suffix) - $extLength)) {
+			return true;
+		}			
+		
+		return false;
+	}
+	
+	private function ftpRecursiveDelete($conn_id, $directory) {
+		//if(ftp_size($conn_id, $directory) == -1) { return; }
+		
+		# here we attempt to delete the file/directory
+		if( ! ( @ftp_rmdir($conn_id, $directory) || @ftp_delete($conn_id, $directory) ) )
+		{            
+			# if the attempt to delete fails, get the file listing
+			$filelist = @ftp_nlist($conn_id, $directory);
+			//var_dump($filelist);exit;
+			# loop through the file list and recursively delete the FILE in the list
+			if($filelist ) {
+				foreach($filelist as $file) {    
+					
+					$parts = explode("/", $file);
+					$fileName =  $parts[sizeOf($parts) - 1];
+					if($fileName == '.' ||  $fileName == '..') { continue; }
+					
+					//e cho 'filename: ' . $parts[sizeOf($parts) - 1] . '<--';
+					//e cho 'FILE: ' . $file . '<--' . PHP_EOL;
+					if($file == ftp_pwd($conn_id)) {
+						//e cho 'file is current dir... continue' . PHP_EOL;
+						continue;
+					}
+					if(@ftp_chdir($conn_id, $file)) { 
+						// ok it's a dir
+						// maybe it's empty?
+						//e cho 'trying to remove dir' . PHP_EOL;
+						if(@ftp_rmdir($conn_id, $file)) {
+						
+						} else {					
+							//e cho 'no success, recurse...' . PHP_EOL;
+							//not empty recurse
+							$this->ftpRecursiveDelete($conn_id, $file);	
+						}					
+						
+					} else {
+						// must be a file
+						//e cho 'must be a file...' . PHP_EOL;
+						@ftp_delete($conn_id, $file);
+					}
+				}
+				$this->ftpRecursiveDelete($conn_id, $directory);
+			}			
+		}
+	}
+	
     protected function ftpGetConnection()
     {
         $ftp_server = $this->config['server'];

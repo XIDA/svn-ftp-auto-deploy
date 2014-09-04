@@ -19,26 +19,33 @@ class Svn
         $this->config = $config;
     }
     
-    public function checkoutChanges($rVer)
+    public function checkoutChanges($targetRev, $rVer)
     {
-        $changes = $this->getRecentChanges($rVer);
-        
-        foreach($changes as $f)
+        $changes = $this->getRecentChanges($targetRev, $rVer);
+		//e cho '...' . PHP_EOL;
+        //v ar_dump($changes);
+		
+        foreach($changes['files'] as $f)
         {
+			$cItem = array();
             $path = $this->config['svn_root'].$f;
-            
-            // Strip /trunk/wwwroot/ and change / to \
-            $file = substr($f, strlen($this->config['svn_subfolder'])+1);
+			
+			$file = str_replace($this->config['svn_root'], "", $f);
+            //$file = substr($f, strlen($this->config['svn_subfolder']) - 1);
+			echo "file: " . $file . PHP_EOL;
             $target = $this->fs->getTempFolder() . str_replace('/','\\', $file);
-            
+			echo 'target: ' . $target . '<--' . PHP_EOL; 
+			
             //var_dump($target, $file, $f, $path); exit;
             
             // Ensure Directory Exists
             $this->fs->ensureFolderExists($target);
             
-            $cmd = 'svn export '.$path.' '.$target;
+            $cmd = 'svn export ' . $f . '@' .  $targetRev . ' ' . $target;
+			echo 'cmd: ' . $cmd . '<--' . PHP_EOL;
+			
             exec($cmd);
-            
+            //die;
             //var_dump($cmd);
         }
         
@@ -48,13 +55,13 @@ class Svn
         return $changes;
     }
     
-    protected function getRecentChanges($rVer)
+    protected function getRecentChanges($sVer, $rVer)
     {
-        $raw_log = $this->getChangeLog($rVer);
+        $raw_log = $this->getChangeLog($sVer, $rVer);
         
         $changes = $this->getChangeArr($raw_log);
         
-        return array_unique($changes);
+        return $changes;
     }
     
     public function getCurrentVersion()
@@ -75,16 +82,16 @@ class Svn
         return $matches[1];
     }
     
-    protected function getChangeLog($remote_ver)
+    protected function getChangeLog($targetVer, $ftpVersion)
     {
         //$remote_ver = $this->getRemoteVersion();
-        $remote_ver++;
         
         // We want the subfolder here because we only need to export
         // the files that should be uploaded.
         $repo = $this->config['svn_root'].$this->config['svn_subfolder'];
         
-        $cmd = 'svn log ' . $repo . ' -v -r'.$remote_ver.':HEAD';
+        //$cmd = 'svn log ' . $repo . ' -v -r'.$ftpVersion.':' . $targetVer;
+		$cmd = 'svn diff ' . $repo . ' --summarize -r'.$ftpVersion.':' . $targetVer;
         echo $cmd . "\r\n";
         
         $out = null;
@@ -94,27 +101,9 @@ class Svn
         return $out;
     }
     
-    protected function getChangeArr($lines)
-    {
-        ob_start();
-        
-        /*Patterns for svn log  conversion*/
-        $svnRevStart = "/\-{72,}/"; //72 dashes(-)
-        $noOfChanges = "/\|\ (\d)+\ line(s)*/";  //get 3 lines from the text "r2 | palanirajaap | 2008-09-18 16:08:12 +0530 (Thu, 18 Sep 2008) | 3 lines" //but never used
-        $fileStatus = "/(\ ){3}[A-Z]{1}/";  //"   M /lib/templates/admin/login.html"
-        $skipStatusChars = 5;  //get the file, by skipping "...M.";
-        
-        //The task
-        //$lines = explode("\n",$svnlog);
-        echo "\r\n". 'SVN Export Details' . "\r\n";
-        //print_r($lines);
-        
-        $files = array();
-        $delFiles = array();
-        $filesWithStatus = array();
-        $comments = false;
-        
-        $totLines = count($lines)-1; //skip the last line of 72 dashes(-);
+    protected function getChangeArr($lines) {
+	
+        $totLines = count($lines);
         for($i=0;$i<$totLines;$i++)
         {
             //echo "\nInside FOR i = $i";
@@ -123,72 +112,27 @@ class Svn
             $curLine = str_replace("\r", "", $curLine);
             $curLine = str_replace("\n", "", $curLine);
             
-            //echo "\nLine $i has length : ".strlen($curLine);//get the empty line between files and comment
-            if(!strlen($curLine))
-            {
-                $comments = true;
-                continue;//skip the empty line
-            }
-            //check if it is begining of the revision
-            preg_match($svnRevStart, $curLine, $matches);
-            if(count($matches))
-            {
-                $comments = false;
-                echo "\nVersion start at $i. ";//var_dump($matches);
-                $i++; //get the meta tags
-                $metaTags = $lines[$i];
-                echo "\n\tMetaTags at $i: ".$metaTags;
-                //var_dump($curLine);
-                //skip the "changed paths"
-                $i++;
-            }
-            else
-            {
-                //get the list
-                if($comments)
-                {
-                    //skip the comments 
-                    continue;
-                }
-                else
-                {
-                    //$files[] = $curLine;
-                    //split the Status and File
-                    preg_match($fileStatus, $curLine, $status); //will return array("   M"," ")
-                    $sts = trim($status[0]);
-                    //skip the file if it is deleted
-                    $file = trim(substr($curLine, $skipStatusChars)); //get the file, by skipping "...M."; 
-                    
-                    // Ensure we don't copy files outside of the svn_subfolder
-                    if (strpos($file, $this->config['svn_subfolder']) === false)
-                    {
-                        // Found external file
-                        echo 'External, Skipping: ' . $f . "\r\n";
-                        continue;
-                    }
-                    
-                    $fileWithStatus = $sts."@@".$file;
-                    //print_r($fileWithStatus);
-                    if($sts == 'D')
-                    {
-                        $delFiles[] = $file;
-                    }
-                    else
-                    {
-                        $files[] = $file;
-                    }
-                }
-            }
+			$parts = explode(" ", $curLine);
+			$sts = $parts[0];
+			$file = $parts[7];
+			if($sts == 'D')
+			{
+				$delFiles[] = $file;
+			}
+			else
+			{
+				$files[] = $file;
+			}			
+			
         }
         echo "\r\n".'Completed SVN Parsing'."\r\n";
-        $info = ob_get_clean();
-        
-        echo $info;
-        
-        // Map old path to new path.
-        //foreach($files as $k => $v) $files[$k] = map($v);
-        
-        return $files;
+
+
+		$returnArray = array();
+		$returnArray['files'] = array_unique($files);
+		$returnArray['delFiles'] = array_unique($delFiles);
+
+        return $returnArray;
     }
     
 }
