@@ -98,43 +98,29 @@ class Ftp
 			}
             
 			//e cho 'source: ' . $source . PHP_EOL;
-            if (is_dir($source))
-            {
-				echo 'this is a dir, nothing to do' . PHP_EOL;
-                // There was a change in folder attributes...?
-                // "goDir" will create the directory at least.
-                // Upload would fail.
+            if (is_dir($source)) {
+				//e cho 'this is a dir, nothing to do' . PHP_EOL;
                 continue;
             }
  
-            //e cho $dir;
-            //e cho ftp_pwd($conn_id) . '<br />';
-            //e cho ftp_chdir($conn_id, $dir) . '<br />';
-            //e cho ftp_pwd($conn_id) . '<br />';
             
             // upload the file
-            //$upload = false;
-            //$upload = ftp_put($conn_id, $destination, $source, FTP_ASCII);
 			$this->log('Source: '.$source);
 			$this->log('Destination: '.$source);
 			
-			 echo "Uploading $destination ...";
+			echo "Uploading $destination ...";
             $upload = ftp_put($conn_id, $destination, $source, FTP_BINARY); 
 
             //var_dump($upload, $change, $destination, $source);
             
             // check upload status
-            if (!$upload)
-            { 
+            if (!$upload) { 
                 echo "\r\nFTP upload has failed! ( " . $upload . " )\r\nReconnecting...\r\n";                             
-            }
-            else
-            {
+            } else {
                 //e cho "Uploaded $source to $destination <br />";
                 echo "done\r\n";
             }
-        }        
-		
+        }
 		
 		if($changes['delFiles']) {
 			foreach($changes['delFiles'] as $change) {
