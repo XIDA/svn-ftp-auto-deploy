@@ -89,7 +89,7 @@ class Ftp
 
             // The ftp destination directory.
             $destination = $this->getDestinationForFile($change);
-			echo '--->DEST: ' . $destination . '<--' . PHP_EOL;
+			//e cho '--->DEST: ' . $destination . '<--' . PHP_EOL;
 			
 			if(is_dir($source)) {
 				$this->ftpGoDir($conn_id, $destination);
@@ -118,6 +118,7 @@ class Ftp
 			$this->log('Source: '.$source);
 			$this->log('Destination: '.$source);
 			
+			 echo "Uploading $destination \r\n";
             $upload = ftp_put($conn_id, $destination, $source, FTP_BINARY); 
 
             //var_dump($upload, $change, $destination, $source);
@@ -130,7 +131,7 @@ class Ftp
             else
             {
                 //e cho "Uploaded $source to $destination <br />";
-                echo "Uploaded: $destination \r\n";
+                echo "done\r\n";
             }
         }        
 		
