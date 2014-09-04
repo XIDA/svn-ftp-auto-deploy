@@ -26,6 +26,8 @@ $svn = new Svn($fs, $config);
 $ftp = new Ftp($fs, $config);
 
 $rVer = $ftp->getCurrentVersion();
+$svnLatestVer = $svn->getCurrentVersion();
+
 if($rVer == "") {
 	echo 'error: could not get version from FTP' . PHP_EOL;
 	exit;
@@ -45,6 +47,10 @@ if($rVer  == -1) {
 
 if(sizeOf($argv) > 2) {
 	$sVer = $argv[2];
+	if($sVer > $svnLatestVer) {
+		echo 'error: target revison is greater than latest svn revision ' . $svnLatestVer . PHP_EOL;
+		exit;	
+	}
 } else {
 	$sVer = $svn->getCurrentVersion();
 }
