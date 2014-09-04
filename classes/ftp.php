@@ -118,7 +118,7 @@ class Ftp
 			$this->log('Source: '.$source);
 			$this->log('Destination: '.$source);
 			
-			 echo "Uploading $destination \r\n";
+			 echo "Uploading $destination ...";
             $upload = ftp_put($conn_id, $destination, $source, FTP_BINARY); 
 
             //var_dump($upload, $change, $destination, $source);
@@ -126,7 +126,7 @@ class Ftp
             // check upload status
             if (!$upload)
             { 
-                echo "FTP upload has failed! ( " . $upload . " )\r\nReconnecting...\r\n";                             
+                echo "\r\nFTP upload has failed! ( " . $upload . " )\r\nReconnecting...\r\n";                             
             }
             else
             {
