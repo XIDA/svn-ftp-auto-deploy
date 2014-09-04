@@ -158,7 +158,7 @@ class Ftp
         ftp_chdir($conn_id, $current);
         
         foreach($parts as $part) {
-            echo 'part: ' . $part . PHP_EOL;			
+            //e cho 'part: ' . $part . PHP_EOL;			
 			
             $current .= $part . '/';
             // Try to navigate
