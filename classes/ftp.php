@@ -66,14 +66,14 @@ class Ftp
     }
     
 	private function getSourceForFile($change) {
-		$source = str_replace($this->config['svn_root'], "", $change);	
+		$source = str_replace($this->config['svn_root']. $this->config['svn_subfolder'], "", $change);	
 	    $source = $this->fs->getTempFolder() . str_replace('/','\\', $source);
 		$source = str_replace('\\','\\\\', $source);	
 		return $source;
 	}
 		
 	private function getDestinationForFile($change) {
-		return str_replace($this->config['svn_root'], "", $change);	
+		return str_replace($this->config['svn_root'] . $this->config['svn_subfolder'], "", $change);	
 	}
 				
     public function putChanges($changes)
@@ -81,15 +81,14 @@ class Ftp
         $conn_id = $this->ftpGetConnection();
         //e cho ftp_pwd($conn_id);exit;
         
-        foreach($changes['files'] as $change)
-        {
+        foreach($changes['files'] as $change) {
 	        // We want to strip the svn's subfolder from the change.
 	        // because that subfolder is exported to the $temp folder.
 			$source = $this->getSourceForFile($change);
-
+			//e cho 'source: ' . $source . PHP_EOL;
             // The ftp destination directory.
             $destination = $this->getDestinationForFile($change);
-			//e cho '--->DEST: ' . $destination . '<--' . PHP_EOL;
+			//e cho 'destination: ' . $destination . PHP_EOL;
 			
 			if(is_dir($source)) {
 				$this->ftpGoDir($conn_id, $destination);
@@ -99,7 +98,7 @@ class Ftp
             
 			//e cho 'source: ' . $source . PHP_EOL;
             if (is_dir($source)) {
-				//e cho 'this is a dir, nothing to do' . PHP_EOL;
+				echo 'created directory ' . $destination . PHP_EOL;
                 continue;
             }
  
@@ -109,13 +108,14 @@ class Ftp
 			$this->log('Destination: '.$source);
 			
 			echo "Uploading $destination ...";
-            $upload = ftp_put($conn_id, $destination, $source, FTP_BINARY); 
+            $upload = ftp_put($conn_id, basename($destination), $source, FTP_BINARY); 
 
             //var_dump($upload, $change, $destination, $source);
             
             // check upload status
             if (!$upload) { 
-                echo "\r\nFTP upload has failed! ( " . $upload . " )\r\nReconnecting...\r\n";                             
+                echo "\r\nFTP upload has failed! ( " . $upload . " )\r\n";                             
+				exit;
             } else {
                 //e cho "Uploaded $source to $destination <br />";
                 echo "done\r\n";
@@ -145,17 +145,14 @@ class Ftp
         ftp_chdir($conn_id, $current);
         
         foreach($parts as $part) {
-            //e cho 'part: ' . $part . PHP_EOL;			
-			
+            //e cho 'part: ' . $part . PHP_EOL;						
             $current .= $part . '/';
             // Try to navigate
-            if (@ftp_chdir($conn_id, $current))
-            {
+            if (@ftp_chdir($conn_id, $current)) {
                 continue;
             }
             
             // Doesn't exist, make it.
-			//e cho "mkdir " . $current . PHP_EOL;
 			// without this an empty directory \ will be created			
 			if($part == "\\") { continue; }
             ftp_mkdir($conn_id, $current);

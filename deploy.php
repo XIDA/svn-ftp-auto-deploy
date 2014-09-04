@@ -62,13 +62,13 @@ if ($sVer != $rVer)
 {
     $changes = $svn->checkoutChanges($sVer, $rVer);
     
-    echo "\r\n\r\n[ Found " . (count($changes['files'])) . " files to upload and " . (count($changes['delFiles'])) . " files to delete.]\r\n\r\n";
+    echo "\r\n\r\n[ Found " . (count($changes['files'])) . " files / directories that changed and " . (count($changes['delFiles'])) . " files to delete.]\r\n\r\n";
     
     // Create a .ver file
     $fs->addSvnVersion($sVer);
     
-    $changes['files'][] = $config['svn_subfolder'].$config['version_file'];
-
+    $changes['files'][] = $config['version_file'];
+	
     $ftp->putChanges($changes);
 }
 else

@@ -23,14 +23,13 @@ class Svn
     {
         $changes = $this->getRecentChanges($targetRev, $rVer);
 		//e cho '...' . PHP_EOL;
-        //v ar_dump($changes);
+        //v ar_dump($changes);		
 		
-        foreach($changes['files'] as $f)
-        {
+        foreach($changes['files'] as $f) {
 			$cItem = array();
             $path = $this->config['svn_root'].$f;
 			
-			$file = str_replace($this->config['svn_root'], "", $f);
+			$file = str_replace($this->config['svn_root'] . $this->config['svn_subfolder'], "", $f);
             //$file = substr($f, strlen($this->config['svn_subfolder']) - 1);
 			//e cho "file: " . $file . PHP_EOL;
             $target = $this->fs->getTempFolder() . str_replace('/','\\', $file);
@@ -67,8 +66,7 @@ class Svn
         return $this->getSvnVersion();
     }
     
-    protected function getSvnVersion()
-    {
+    protected function getSvnVersion() {	
         $cmd = 'svn info '.$this->config['svn_root'];
         $x = exec($cmd, $result);
         
@@ -80,8 +78,7 @@ class Svn
         return $matches[1];
     }
     
-    protected function getChangeLog($targetVer, $ftpVersion)
-    {
+    protected function getChangeLog($targetVer, $ftpVersion) {
         //$remote_ver = $this->getRemoteVersion();
         
         // We want the subfolder here because we only need to export
@@ -90,7 +87,7 @@ class Svn
         
         //$cmd = 'svn log ' . $repo . ' -v -r'.$ftpVersion.':' . $targetVer;
 		$cmd = 'svn diff ' . $repo . ' --summarize -r'.$ftpVersion.':' . $targetVer;
-        //e cho $cmd . "\r\n";
+        //e cho $cmd . "\r\n";		
         
         $out = null;
         $return = null;
@@ -103,9 +100,11 @@ class Svn
 		$delFiles = array();
 		$files = array();
 		
+		$repo = $this->config['svn_root'].$this->config['svn_subfolder'];
+		$repo = rtrim($repo,"/");
+		
         $totLines = count($lines);
-        for($i=0;$i<$totLines;$i++)
-        {
+        for($i=0;$i<$totLines;$i++) {
             //e cho "\nInside FOR i = $i";
             $curLine = $lines[$i];
             //remove \r and \n
@@ -115,6 +114,12 @@ class Svn
 			$parts = explode(" ", $curLine);
 			$sts = $parts[0];
 			$file = $parts[7];
+			$file = rtrim($file,"/");
+			
+			//if the file url is the same as the repo url, we remove it
+			if($file == $repo) {
+				continue;
+			}
 			if($sts == 'D')
 			{
 				$delFiles[] = $file;
