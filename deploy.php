@@ -58,8 +58,8 @@ if ($config['debug'])
 	exit;
 }
 
-if ($sVer != $rVer)
-{
+if ($sVer != $rVer) {
+	echo 'collecting changed files...' . PHP_EOL;
     $changes = $svn->checkoutChanges($sVer, $rVer);
     
     echo "\r\n\r\n[ Found " . (count($changes['files'])) . " files / directories that changed and " . (count($changes['delFiles'])) . " files to delete.]\r\n\r\n";
