@@ -89,14 +89,18 @@ class Ftp
 
             // The ftp destination directory.
             $destination = $this->getDestinationForFile($change);
-			//e cho '--->DEST1: ' . $destination . '<--' . PHP_EOL;
+			echo '--->DEST: ' . $destination . '<--' . PHP_EOL;
 			
-            $this->ftpGoDir($conn_id, dirname($destination));
+			if(is_dir($source)) {
+				$this->ftpGoDir($conn_id, $destination);
+			} else {
+				$this->ftpGoDir($conn_id, dirname($destination));
+			}
             
 			//e cho 'source: ' . $source . PHP_EOL;
             if (is_dir($source))
             {
-				//e cho 'this is a dir, nothing to do' . PHP_EOL;
+				echo 'this is a dir, nothing to do' . PHP_EOL;
                 // There was a change in folder attributes...?
                 // "goDir" will create the directory at least.
                 // Upload would fail.
@@ -121,30 +125,12 @@ class Ftp
             // check upload status
             if (!$upload)
             { 
-                echo "FTP upload has failed! ( " . $upload . " )\r\nReconnecting...\r\n";
-                
-                // Try to Re-Aquire Connection
-                ftp_close($conn_id);
-                $conn_id = $this->ftpGetConnection();
-                
-                //e cho 'Connection aquired, navigating to directory.'."\r\n";
-                
-                $this->ftpGoDir($conn_id, dirname($destination));
-                
-                $upload = ftp_put($conn_id, $destination, $source, FTP_BINARY); 
-                
-                if (!$upload)
-                {
-	                //e cho 'Could not upload on second try, exiting.'."\r\n";
-	                var_dump($destination, $source);
-	                exit;
-                }
-                
+                echo "FTP upload has failed! ( " . $upload . " )\r\nReconnecting...\r\n";                             
             }
             else
             {
                 //e cho "Uploaded $source to $destination <br />";
-                echo "Up: $destination \r\n";
+                echo "Uploaded: $destination \r\n";
             }
         }        
 		
@@ -165,20 +151,15 @@ class Ftp
         ftp_close($conn_id); 
     }
     
-    protected function ftpGoDir($conn_id, $dir)
-    {
+    protected function ftpGoDir($conn_id, $dir) {
+		echo '--->' . $dir . '<--';
         $parts = explode('/', ltrim($dir, '/'));
-        
+        var_dump( $parts);
         $current = '/';
         ftp_chdir($conn_id, $current);
         
-        foreach($parts as $part)
-        {
-            //var_dump(ftp_pwd($conn_id));
-            //var_dump($dir, $current, $part);
-            //e cho 'part: ' . $part . PHP_EOL;
-			// without this an empty directory \ will be created
-			if($part == "\\") { continue; }
+        foreach($parts as $part) {
+            echo 'part: ' . $part . PHP_EOL;			
 			
             $current .= $part . '/';
             // Try to navigate
@@ -188,6 +169,9 @@ class Ftp
             }
             
             // Doesn't exist, make it.
+			//e cho "mkdir " . $current . PHP_EOL;
+			// without this an empty directory \ will be created			
+			if($part == "\\") { continue; }
             ftp_mkdir($conn_id, $current);
             ftp_chdir($conn_id, $current);
         }
