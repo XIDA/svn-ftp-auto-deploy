@@ -32,9 +32,9 @@ class Svn
 			
 			$file = str_replace($this->config['svn_root'], "", $f);
             //$file = substr($f, strlen($this->config['svn_subfolder']) - 1);
-			echo "file: " . $file . PHP_EOL;
+			//e cho "file: " . $file . PHP_EOL;
             $target = $this->fs->getTempFolder() . str_replace('/','\\', $file);
-			echo 'target: ' . $target . '<--' . PHP_EOL; 
+			//e cho 'target: ' . $target . '<--' . PHP_EOL; 
 			
             //var_dump($target, $file, $f, $path); exit;
             
@@ -42,11 +42,9 @@ class Svn
             $this->fs->ensureFolderExists($target);
             
             $cmd = 'svn export ' . $f . '@' .  $targetRev . ' ' . $target;
-			echo 'cmd: ' . $cmd . '<--' . PHP_EOL;
+			//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;
 			
             exec($cmd);
-            //die;
-            //var_dump($cmd);
         }
         
         $svn_ver = $this->getSvnVersion();
@@ -92,7 +90,7 @@ class Svn
         
         //$cmd = 'svn log ' . $repo . ' -v -r'.$ftpVersion.':' . $targetVer;
 		$cmd = 'svn diff ' . $repo . ' --summarize -r'.$ftpVersion.':' . $targetVer;
-        echo $cmd . "\r\n";
+        //e cho $cmd . "\r\n";
         
         $out = null;
         $return = null;
@@ -106,7 +104,7 @@ class Svn
         $totLines = count($lines);
         for($i=0;$i<$totLines;$i++)
         {
-            //echo "\nInside FOR i = $i";
+            //e cho "\nInside FOR i = $i";
             $curLine = $lines[$i];
             //remove \r and \n
             $curLine = str_replace("\r", "", $curLine);
@@ -125,7 +123,7 @@ class Svn
 			}			
 			
         }
-        echo "\r\n".'Completed SVN Parsing'."\r\n";
+        //e cho "\r\n".'Completed SVN Parsing'."\r\n";
 
 
 		$returnArray = array();

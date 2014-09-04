@@ -79,7 +79,7 @@ class Ftp
     public function putChanges($changes)
     {
         $conn_id = $this->ftpGetConnection();
-        //echo ftp_pwd($conn_id);exit;
+        //e cho ftp_pwd($conn_id);exit;
         
         foreach($changes['files'] as $change)
         {
@@ -89,24 +89,24 @@ class Ftp
 
             // The ftp destination directory.
             $destination = $this->getDestinationForFile($change);
-			echo '--->DEST1: ' . $destination . '<--' . PHP_EOL;
+			//e cho '--->DEST1: ' . $destination . '<--' . PHP_EOL;
 			
             $this->ftpGoDir($conn_id, dirname($destination));
             
-			echo 'source: ' . $source . PHP_EOL;
+			//e cho 'source: ' . $source . PHP_EOL;
             if (is_dir($source))
             {
-				echo 'this is a dir, nothing to do' . PHP_EOL;
+				//e cho 'this is a dir, nothing to do' . PHP_EOL;
                 // There was a change in folder attributes...?
                 // "goDir" will create the directory at least.
                 // Upload would fail.
                 continue;
             }
  
-            //echo $dir;
-            //echo ftp_pwd($conn_id) . '<br />';
-            //echo ftp_chdir($conn_id, $dir) . '<br />';
-            //echo ftp_pwd($conn_id) . '<br />';
+            //e cho $dir;
+            //e cho ftp_pwd($conn_id) . '<br />';
+            //e cho ftp_chdir($conn_id, $dir) . '<br />';
+            //e cho ftp_pwd($conn_id) . '<br />';
             
             // upload the file
             //$upload = false;
@@ -127,7 +127,7 @@ class Ftp
                 ftp_close($conn_id);
                 $conn_id = $this->ftpGetConnection();
                 
-                echo 'Connection aquired, navigating to directory.'."\r\n";
+                //e cho 'Connection aquired, navigating to directory.'."\r\n";
                 
                 $this->ftpGoDir($conn_id, dirname($destination));
                 
@@ -135,7 +135,7 @@ class Ftp
                 
                 if (!$upload)
                 {
-	                echo 'Could not upload on second try, exiting.'."\r\n";
+	                //e cho 'Could not upload on second try, exiting.'."\r\n";
 	                var_dump($destination, $source);
 	                exit;
                 }
@@ -143,7 +143,7 @@ class Ftp
             }
             else
             {
-                //echo "Uploaded $source to $destination <br />";
+                //e cho "Uploaded $source to $destination <br />";
                 echo "Up: $destination \r\n";
             }
         }        

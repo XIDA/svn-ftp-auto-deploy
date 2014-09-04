@@ -91,7 +91,7 @@ class FileSystem
         foreach($parts as $part)
         {
             $folder .= $part . DIRECTORY_SEPARATOR;
-            //echo 'Make: ' . dirname($target) . '<br />';
+            //e cho 'Make: ' . dirname($target) . '<br />';
             
             if (!file_exists($folder))
             {
