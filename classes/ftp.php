@@ -151,10 +151,9 @@ class Ftp
         ftp_close($conn_id); 
     }
     
-    protected function ftpGoDir($conn_id, $dir) {
-		echo '--->' . $dir . '<--';
+    protected function ftpGoDir($conn_id, $dir) {		
         $parts = explode('/', ltrim($dir, '/'));
-        var_dump( $parts);
+        
         $current = '/';
         ftp_chdir($conn_id, $current);
         
