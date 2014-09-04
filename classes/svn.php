@@ -41,7 +41,7 @@ class Svn
             // Ensure Directory Exists
             $this->fs->ensureFolderExists($target);
             
-            $cmd = 'svn export ' . $f . '@' .  $targetRev . ' ' . $target;
+            $cmd = 'svn export --force ' . $f . '@' .  $targetRev . ' ' . $target;
 			//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;
 			
             exec($cmd);
@@ -100,7 +100,9 @@ class Svn
     }
     
     protected function getChangeArr($lines) {
-	
+		$delFiles = array();
+		$files = array();
+		
         $totLines = count($lines);
         for($i=0;$i<$totLines;$i++)
         {
@@ -127,8 +129,9 @@ class Svn
 
 
 		$returnArray = array();
-		$returnArray['files'] = array_unique($files);
+		$returnArray['files'] = array_unique($files);		
 		$returnArray['delFiles'] = array_unique($delFiles);
+		
 
         return $returnArray;
     }

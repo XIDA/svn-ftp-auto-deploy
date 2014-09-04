@@ -29,6 +29,8 @@ class FileSystem
         
         return $this->_temp;
     }
+	
+
     
     protected function setupTempFolder()
     {

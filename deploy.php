@@ -7,7 +7,14 @@
  * 
  */
 
-$config = require('config.php');
+if(sizeOf($argv) < 2) {
+	echo 'error: please add the config file as argument 1' . PHP_EOL;
+	exit;
+}
+
+$configName = $argv[1];
+
+$config = require('configs/config_' . $configName . '.php');
 
 require('classes/svn.php');
 require('classes/ftp.php');
@@ -19,14 +26,31 @@ $svn = new Svn($fs, $config);
 $ftp = new Ftp($fs, $config);
 
 $rVer = $ftp->getCurrentVersion();
+if($rVer == "") {
+	echo 'error: could not get version from FTP' . PHP_EOL;
+	exit;
+}
 
-if(sizeOf($argv) > 1) {
-	$sVer = $argv[1];
+if($rVer  == -1) {
+	echo "No deploy.ver file found on the ftp, is this your fist commit? (type y to continue)\n";
+	$handle = fopen ("php://stdin","r");
+	$line = fgets($handle);
+	if(trim($line) != 'y'){
+		echo "ABORTING!\n";
+		exit;
+	}
+	echo "\n"; 
+	$rVer = 0;
+}
+
+if(sizeOf($argv) > 2) {
+	$sVer = $argv[2];
 } else {
 	$sVer = $svn->getCurrentVersion();
 }
 
-
+echo 'ftp version: ' . $rVer . PHP_EOL;
+echo 'svn target version: ' . $sVer . PHP_EOL;
 
 if ($config['debug'])
 {
@@ -38,7 +62,7 @@ if ($sVer != $rVer)
 {
     $changes = $svn->checkoutChanges($sVer, $rVer);
     
-    echo "\r\n\r\n[ Found " . (count($changes['files'])) . " changes to upload. ]\r\n\r\n";
+    echo "\r\n\r\n[ Found " . (count($changes['files'])) . " files to upload and " . (count($changes['delFiles'])) . " files to delete.]\r\n\r\n";
     
     // Create a .ver file
     $fs->addSvnVersion($sVer);

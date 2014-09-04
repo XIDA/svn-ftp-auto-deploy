@@ -44,16 +44,16 @@ class Ftp
 	    $this->log('PWD is: '.ftp_pwd($conn_id));
 	    
         $filepath = $this->config['version_file'];
-        // $this->config['ftp_root'].'  '.$this->config['version_file']
+        
 	    $this->log('Attempt GET: '.$filepath);
 	    
-        //ftp_get($conn_id, $temp.$this->config['version_file'], $this->config['ftp_root'].$this->config['version_file'], FTP_BINARY);
-        $success = ftp_get($conn_id, $temp.$this->config['version_file'], $filepath, FTP_BINARY);
+
+        $success = @ftp_get($conn_id, $temp.$this->config['version_file'], $filepath, FTP_BINARY);
         
         if (!$success)
         {
             $this->log('GET Failed');
-            exit;
+            return "-1";
         }
         
         $this->log('GET Success');
@@ -149,16 +149,17 @@ class Ftp
         }        
 		
 		
-		foreach($changes['delFiles'] as $change) {
-            $destination = $this->getDestinationForFile($change);
-			//e cho '--->DEST DEL: ' . $destination . '<--' . PHP_EOL;
-			
-			$source = $this->getSourceForFile($change);
+		if($changes['delFiles']) {
+			foreach($changes['delFiles'] as $change) {
+				$destination = $this->getDestinationForFile($change);
+				//e cho '--->DEST DEL: ' . $destination . '<--' . PHP_EOL;
+				
+				$source = $this->getSourceForFile($change);
 
-			$this->ftpRecursiveDelete($conn_id, $destination);
-            			
+				$this->ftpRecursiveDelete($conn_id, $destination);
+							
+			}
 		}
-		die;
         
         // close the FTP stream 
         ftp_close($conn_id); 
@@ -270,7 +271,7 @@ class Ftp
         }
         else
         {
-            echo 'Connected to [[ '.$ftp_server . ' ]] for user [[ '.$ftp_user.' ]]'."\r\n";
+            //e cho 'Connected to [[ '.$ftp_server . ' ]] for user [[ '.$ftp_user.' ]]'."\r\n";
         }
         
         // Passive Connection
