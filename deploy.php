@@ -34,7 +34,7 @@ if($rVer == "") {
 }
 
 if($rVer  == -1) {
-	echo 'No ' . $this->config['version_file'] . ' file found on the ftp, is this your fist commit? (type y to continue)\n';
+	echo 'No ' . $config['version_file'] . ' file found on the ftp, is this your first commit? (type y to continue)' . PHP_EOL;
 	$handle = fopen ("php://stdin","r");
 	$line = fgets($handle);
 	if(trim($line) != 'y'){

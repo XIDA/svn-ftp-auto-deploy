@@ -83,9 +83,38 @@ class Svn
         // the files that should be uploaded.
         $repo = $this->config['svn_root'].$this->config['svn_subfolder'];
         
-        //$cmd = 'svn log ' . $repo . ' -v -r'.$ftpVersion.':' . $targetVer;
+		//check if the file is there at all
+        $cmd = 'svn log -r 1:HEAD --limit 1 ' . $repo;
+		
+		$exec = exec($cmd, $out);
+		
+		// this happens if your desired path isn't in the svn anymore
+		// for example if the svn subdir was deleted
+		if(sizeOf($out) == 0) {
+			echo 'error: there is a problem with the path you a trying to check out' . PHP_EOL;
+			echo 'use the following command to find out what\'s wrong' . PHP_EOL;
+			echo $cmd . PHP_EOL;			
+			exit;
+		}
+
+		// we have to check if the svn path is available at the desired revision
+		// we use svn log for that and the output looks like this
+		// r41345 | bk | 2014-09-04 14:57:16 +0200 (Do, 04 Sep 2014) | 1 line\n\nmega changes\n
+		// so after the r we will find the revision number, let's use regex
+		$re = "/r([0-9]*) \\|/";     
+		preg_match($re, $out[1], $matches);		
+		// matches[1] contains the revision number
+		$firstRevisionOfSVNPath = $matches[1];
+
+		if($firstRevisionOfSVNPath > $targetVer) {
+			echo 'error: you are trying to update to revision ' . $targetVer . ' but the first revision of your svn path is ' . $firstRevisionOfSVNPath . PHP_EOL;
+			echo 'use the following command to find out what\'s wrong' . PHP_EOL;
+			echo $cmd . PHP_EOL;			
+			exit;		
+		}
+		
 		$cmd = 'svn diff ' . $repo . ' --summarize -r '.$ftpVersion.':' . $targetVer;
-        //e cho $cmd . "\r\n";		
+        //e cho $cmd . PHP_EOL;		
         
         $out = null;
         $return = null;
