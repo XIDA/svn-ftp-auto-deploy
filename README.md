@@ -3,6 +3,9 @@ svn-ftp-auto-deploy
 
 php script to facilitate automatic deploy from SVN to FTP.
 
+![Deploy SVN to FTP](https://github.com/XIDA/svn-ftp-auto-deploy/raw/master/images/eyecatcher.png)
+
+
 Synopsis
 ========
 
