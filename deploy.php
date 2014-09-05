@@ -4,7 +4,7 @@
  *  - Checks ftp for current version
  *  - "Exports" changes from SVN
  *  - Uploads via ftp and updates version file with latest SVN version.
- * 
+ *
  */
 
 if(sizeOf($argv) < 2) {
@@ -19,6 +19,7 @@ $config = require('configs/config_' . $configName . '.php');
 require('classes/svn.php');
 require('classes/ftp.php');
 require('classes/filesystem.php');
+require('classes/Logger.php');
 
 
 $fs = new FileSystem($config);
@@ -29,7 +30,7 @@ $rVer = $ftp->getCurrentVersion();
 $svnLatestVer = $svn->getCurrentVersion();
 
 if($rVer == "") {
-	echo 'error: could not get version from FTP' . PHP_EOL;
+	Logger::e('error: could not get version from FTP');
 	exit;
 }
 
@@ -41,22 +42,22 @@ if($rVer  == -1) {
 		echo "ABORTING!\n";
 		exit;
 	}
-	echo "\n"; 
+	echo "\n";
 	$rVer = 0;
 }
 
 if(sizeOf($argv) > 2) {
 	$sVer = $argv[2];
 	if($sVer > $svnLatestVer) {
-		echo 'error: target revison is greater than latest svn revision ' . $svnLatestVer . PHP_EOL;
-		exit;	
+		Logger::e('target revison is greater than latest svn revision ' . $svnLatestVer);
+		exit;
 	}
 } else {
 	$sVer = $svn->getCurrentVersion();
 }
 
-echo 'ftp version: ' . $rVer . PHP_EOL;
-echo 'svn target version: ' . $sVer . PHP_EOL;
+Logger::i('ftp version: ' . $rVer);
+Logger::i('svn target version: ' . $sVer);
 
 if ($config['debug'])
 {
@@ -65,21 +66,22 @@ if ($config['debug'])
 }
 
 if ($sVer != $rVer) {
-	echo 'collecting changed files...' . PHP_EOL;
+	Logger::i('collecting changed files');
     $changes = $svn->checkoutChanges($sVer, $rVer);
-    
-    echo "Found " . (count($changes['files'])) . " files / directories that changed and " . (count($changes['delFiles'])) . " files to delete\r\n";
-    
+
+    Logger::i('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
+
     // Create a .ver file
     $fs->addSvnVersion($sVer);
-    
+
     $changes['files'][] = $config['version_file'];
-	
+
     $ftp->putChanges($changes);
-}
-else
-{
-    echo "\r\n -= Up to date =-";
+
+	Logger::i('done');
+
+} else {
+	Logger::i('Nothing to do - Up to date');
 }
 
 $fs->removeTempFolder();
