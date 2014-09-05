@@ -13,23 +13,25 @@ class Svn
      */
     private $config;
     
-    public function __construct($fs, $config)
-    {
+    public function __construct($fs, $config) {
         $this->fs = $fs;
         $this->config = $config;
     }
     
-    public function checkoutChanges($targetRev, $rVer)
-    {
+    public function checkoutChanges($targetRev, $rVer) {
         $changes = $this->getRecentChanges($targetRev, $rVer);
 		//e cho '...' . PHP_EOL;
         //v ar_dump($changes);		
+		
+		echo 'exporting files from svn' . PHP_EOL;
 		
         foreach($changes['files'] as $f) {
 			$cItem = array();
             $path = $this->config['svn_root'].$f;
 			
 			$file = str_replace($this->config['svn_root'] . $this->config['svn_subfolder'], "", $f);
+			echo 'exporting ' . $file . PHP_EOL;
+			
             //$file = substr($f, strlen($this->config['svn_subfolder']) - 1);
 			//e cho "file: " . $file . PHP_EOL;
             $target = $this->fs->getTempFolder() . str_replace('/','\\', $file);
@@ -52,8 +54,7 @@ class Svn
         return $changes;
     }
     
-    protected function getRecentChanges($sVer, $rVer)
-    {
+    protected function getRecentChanges($sVer, $rVer) {
         $raw_log = $this->getChangeLog($sVer, $rVer);
         
         $changes = $this->getChangeArr($raw_log);
@@ -61,8 +62,7 @@ class Svn
         return $changes;
     }
     
-    public function getCurrentVersion()
-    {
+    public function getCurrentVersion() {
         return $this->getSvnVersion();
     }
     
@@ -78,15 +78,13 @@ class Svn
         return $matches[1];
     }
     
-    protected function getChangeLog($targetVer, $ftpVersion) {
-        //$remote_ver = $this->getRemoteVersion();
-        
+    protected function getChangeLog($targetVer, $ftpVersion) {        
         // We want the subfolder here because we only need to export
         // the files that should be uploaded.
         $repo = $this->config['svn_root'].$this->config['svn_subfolder'];
         
         //$cmd = 'svn log ' . $repo . ' -v -r'.$ftpVersion.':' . $targetVer;
-		$cmd = 'svn diff ' . $repo . ' --summarize -r'.$ftpVersion.':' . $targetVer;
+		$cmd = 'svn diff ' . $repo . ' --summarize -r '.$ftpVersion.':' . $targetVer;
         //e cho $cmd . "\r\n";		
         
         $out = null;
@@ -120,23 +118,18 @@ class Svn
 			if($file == $repo) {
 				continue;
 			}
-			if($sts == 'D')
-			{
-				$delFiles[] = $file;
-			}
-			else
-			{
-				$files[] = $file;
-			}			
 			
+			if($sts == 'D') {
+				$delFiles[] = $file;
+			} else {
+				$files[] = $file;
+			}				
         }
         //e cho "\r\n".'Completed SVN Parsing'."\r\n";
 
-
 		$returnArray = array();
 		$returnArray['files'] = array_unique($files);		
-		$returnArray['delFiles'] = array_unique($delFiles);
-		
+		$returnArray['delFiles'] = array_unique($delFiles);		
 
         return $returnArray;
     }

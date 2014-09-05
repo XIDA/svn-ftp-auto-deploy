@@ -34,7 +34,7 @@ if($rVer == "") {
 }
 
 if($rVer  == -1) {
-	echo "No deploy.ver file found on the ftp, is this your fist commit? (type y to continue)\n";
+	echo 'No ' . $this->config['version_file'] . ' file found on the ftp, is this your fist commit? (type y to continue)\n';
 	$handle = fopen ("php://stdin","r");
 	$line = fgets($handle);
 	if(trim($line) != 'y'){
@@ -68,7 +68,7 @@ if ($sVer != $rVer) {
 	echo 'collecting changed files...' . PHP_EOL;
     $changes = $svn->checkoutChanges($sVer, $rVer);
     
-    echo "\r\n\r\n[ Found " . (count($changes['files'])) . " files / directories that changed and " . (count($changes['delFiles'])) . " files to delete.]\r\n\r\n";
+    echo "Found " . (count($changes['files'])) . " files / directories that changed and " . (count($changes['delFiles'])) . " files to delete\r\n";
     
     // Create a .ver file
     $fs->addSvnVersion($sVer);
