@@ -43,7 +43,7 @@ if($rVer  == -1) {
 		echo "ABORTING!\n";
 		exit;
 	}
-	echo "\n";
+	echo PHP_EOL;
 	$rVer = 0;
 }
 
@@ -73,7 +73,7 @@ if ($sVer != $rVer) {
     Logger::i('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
 
     // Create a .ver file
-    $fs->addSvnVersion($sVer);
+    $fs->addSvnVersion($svnLatestVer);
 
     $changes['files'][] = $config['version_file'];
 
