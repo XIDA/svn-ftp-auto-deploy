@@ -73,7 +73,7 @@ class Ftp
 	}
 
 	private function getDestinationForFile($change) {
-		return str_replace($this->config['svn_root'] . $this->config['svn_subfolder'], "", $change);
+		return $this->config['ftp_root'] . str_replace($this->config['svn_root'] . $this->config['svn_subfolder'], "", $change);
 	}
 
     public function putChanges($changes)
