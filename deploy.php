@@ -27,15 +27,15 @@ $fs = new FileSystem($config);
 $svn = new Svn($fs, $config);
 $ftp = new Ftp($fs, $config);
 
-$rVer = $ftp->getCurrentVersion();
+$ftpVer = $ftp->getCurrentVersion();
 $svnLatestVer = $svn->getCurrentVersion();
 
-if($rVer == "") {
+if($ftpVer == "") {
 	Logger::e('error: could not get version from FTP');
 	exit;
 }
 
-if($rVer  == -1) {
+if($ftpVer  == -1) {
 	echo 'No ' . $config['version_file'] . ' file found on the ftp, is this your first commit? (type y to continue)' . PHP_EOL;
 	$handle = fopen ("php://stdin","r");
 	$line = fgets($handle);
@@ -44,36 +44,41 @@ if($rVer  == -1) {
 		exit;
 	}
 	echo PHP_EOL;
-	$rVer = 0;
+	$ftpVer = 0;
 }
 
 if(sizeOf($argv) > 2) {
-	$sVer = $argv[2];
-	if($sVer > $svnLatestVer) {
+	$targetVer = $argv[2];
+	if($targetVer > $svnLatestVer) {
 		Logger::e('target revison is greater than latest svn revision ' . $svnLatestVer);
 		exit;
 	}
 } else {
-	$sVer = $svn->getCurrentVersion();
+	$targetVer = $svn->getCurrentVersion();
 }
 
-Logger::i('ftp version: ' . $rVer);
-Logger::i('svn target version: ' . $sVer);
+Logger::i('ftp version: ' . $ftpVer);
+Logger::i('svn target version: ' . $targetVer);
 
 if ($config['debug'])
 {
-    var_dump($rVer, $sVer, $config);
+    var_dump($rVer, $targetVer, $config);
 	exit;
 }
 
-if ($sVer != $rVer) {
+if ($targetVer != $rVer) {
 	Logger::i('collecting changed files');
-    $changes = $svn->checkoutChanges($sVer, $rVer);
+    $changes = $svn->checkoutChanges($targetVer, $rVer);
 
     Logger::i('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
 
     // Create a .ver file
-    $fs->addSvnVersion($svnLatestVer);
+	if($targetVer < $ftpVer) {
+		$fs->addSvnVersion($targetVer);
+	} else {
+		$fs->addSvnVersion($svnLatestVer);
+	}
+
 
     $changes['files'][] = $config['version_file'];
 
