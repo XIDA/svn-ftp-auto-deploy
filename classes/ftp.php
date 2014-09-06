@@ -107,7 +107,7 @@ class Ftp
 			$this->log('Source: '.$source);
 			$this->log('Destination: '.$source);
 
-			Logger::n('Uploading ' . $destination .' ... ', true);
+			Logger::n('uploading ' . $destination .' ... ', true);
 
             $upload = ftp_put($conn_id, basename($destination), $source, FTP_BINARY);
 
@@ -126,7 +126,7 @@ class Ftp
 		if($changes['delFiles']) {
 			foreach($changes['delFiles'] as $change) {
 				$destination = $this->getDestinationForFile($change);
-				//e cho '--->DEST DEL: ' . $destination . '<--' . PHP_EOL;
+				Logger::n('deleting ' . $destination);
 
 				$source = $this->getSourceForFile($change);
 
