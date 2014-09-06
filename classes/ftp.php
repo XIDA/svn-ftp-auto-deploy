@@ -107,7 +107,7 @@ class Ftp
 			$this->log('Source: '.$source);
 			$this->log('Destination: '.$source);
 
-			Logger::n('Uploading $destination ... ', true);
+			Logger::n('Uploading ' . $destination .' ... ', true);
 
             $upload = ftp_put($conn_id, basename($destination), $source, FTP_BINARY);
 
