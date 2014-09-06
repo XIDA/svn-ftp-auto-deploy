@@ -16,6 +16,7 @@ $configName = $argv[1];
 
 $config = require('configs/config_' . $configName . '.php');
 
+require('classes/Settings.php');
 require('classes/svn.php');
 require('classes/ftp.php');
 require('classes/filesystem.php');

@@ -38,6 +38,8 @@ class Logger {
 	}
 
 	private static function colorize($text, $status) {
+		if(!Settings::$LOG_IN_COLOR) { return $text; }
+
 		$out = "";
 		switch($status) {
 		 case "SUCCESS":
