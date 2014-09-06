@@ -62,13 +62,13 @@ Logger::i('svn target version: ' . $targetVer);
 
 if ($config['debug'])
 {
-    var_dump($rVer, $targetVer, $config);
+    var_dump($ftpVer, $targetVer, $config);
 	exit;
 }
 
-if ($targetVer != $rVer) {
+if ($targetVer != $ftpVer) {
 	Logger::i('collecting changed files');
-    $changes = $svn->checkoutChanges($targetVer, $rVer);
+    $changes = $svn->checkoutChanges($targetVer, $ftpVer);
 
     Logger::i('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
 
