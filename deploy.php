@@ -73,12 +73,7 @@ if ($targetVer != $ftpVer) {
     Logger::i('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
 
     // Create a .ver file
-	if($targetVer < $ftpVer) {
-		$fs->addSvnVersion($targetVer);
-	} else {
-		$fs->addSvnVersion($svnLatestVer);
-	}
-
+	$fs->addSvnVersion($targetVer);
 
     $changes['files'][] = $config['version_file'];
 
