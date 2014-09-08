@@ -10,7 +10,10 @@ return array(
 	'svn_subfolder' => '',
 	'svn_ignore' => array (
 		'nbproject/'
-	),		
+	),			
+	'svn_username' => '',
+	'svn_password' => '',
+	
 	// FTP
 	'ftp_root' => '',
 	'version_file' => '/deploy.ver',
