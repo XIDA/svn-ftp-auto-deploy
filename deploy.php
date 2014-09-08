@@ -29,7 +29,7 @@ $ftp = new Ftp($fs, $config);
 
 $ftpVer = $ftp->getCurrentVersion();
 $svnLatestVer = $svn->getCurrentVersion();
-
+ 
 if($ftpVer == "") {
 	Logger::e('error: could not get version from FTP');
 	exit;
