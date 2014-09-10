@@ -12,10 +12,16 @@ class Svn
      * @var array
      */
     private $config;
+	private $loginString;
 
     public function __construct($fs, $config) {
         $this->fs = $fs;
         $this->config = $config;
+
+		$this->loginString = "";
+		if(strlen($this->config['svn_username']) > 0 && strlen($this->config['svn_password']) > 0) {
+			$this->loginString = '--username ' . $this->config['svn_username'] . ' --password ' . $this->config['svn_password'] . ' ';
+		}
     }
 
     public function checkoutChanges($targetRev, $rVer) {
@@ -42,7 +48,7 @@ class Svn
             // Ensure Directory Exists
             $this->fs->ensureFolderExists($target);
 
-            $cmd = 'svn export --force ' . $f . '@' .  $targetRev . ' ' . $target;
+            $cmd = 'svn export ' . $this->loginString . '--force ' . $f . '@' .  $targetRev . ' ' . $target;
 			//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;
 
             exec($cmd);
@@ -67,7 +73,7 @@ class Svn
     }
 
     protected function getSvnVersion() {
-        $cmd = 'svn info '.$this->config['svn_root'];
+        $cmd = 'svn info ' . $this->loginString . $this->config['svn_root'];
         $x = exec($cmd, $result);
 
         $str = implode(' ', $result);
@@ -84,7 +90,7 @@ class Svn
         $repo = $this->config['svn_root'].$this->config['svn_subfolder'];
 
 		//check if the file is there at all
-        $cmd = 'svn log -r 1:HEAD --limit 1 ' . $repo;
+        $cmd = 'svn log ' . $this->loginString  . '-r 1:HEAD --limit 1 ' . $repo;
 
 		$exec = exec($cmd, $out);
 
@@ -113,7 +119,7 @@ class Svn
 			exit;
 		}
 
-		$cmd = 'svn diff ' . $repo . ' --summarize -r '.$ftpVersion.':' . $targetVer;
+		$cmd = 'svn diff ' . $this->loginString  . $repo . ' --summarize -r '.$ftpVersion.':' . $targetVer;
         //e cho $cmd . PHP_EOL;
 
         $out = null;
