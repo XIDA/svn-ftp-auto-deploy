@@ -24,6 +24,10 @@ class Svn
 		}
     }
 
+	private function getFileNameWithoutSVNUrl($fileUrl) {
+		return str_replace($this->config['svn_root'] . $this->config['svn_subfolder'], "", $fileUrl);
+	}
+
     public function checkoutChanges($targetRev, $rVer) {
         $changes = $this->getRecentChanges($targetRev, $rVer);
 		//e cho '...' . PHP_EOL;
@@ -35,7 +39,7 @@ class Svn
 			$cItem = array();
             $path = $this->config['svn_root'].$f;
 
-			$file = str_replace($this->config['svn_root'] . $this->config['svn_subfolder'], "", $f);
+			$file = $this->getFileNameWithoutSVNUrl($f);
 			Logger::n('exporting ' . $file);
 
             //$file = substr($f, strlen($this->config['svn_subfolder']) - 1);
@@ -59,6 +63,19 @@ class Svn
 
         return $changes;
     }
+
+	private function isInIgnoreList($filePath) {
+		foreach($this->config['svn_ignore'] as $cIgnore) {
+			//e cho $filePath . ' --- ' . $cIgnore . PHP_EOL;
+			$pos = strpos(strtolower($filePath),strtolower($cIgnore));
+			//e cho $pos . PHP_EOL . PHP_EOL;
+			if($pos !== false) {
+				echo 'Ignoring: ' . $filePath . PHP_EOL;
+				return true;
+			}
+		}
+		return false;
+	}
 
     protected function getRecentChanges($sVer, $rVer) {
         $raw_log = $this->getChangeLog($sVer, $rVer);
@@ -153,6 +170,8 @@ class Svn
 			if($file == $repo) {
 				continue;
 			}
+
+			if($this->isInIgnoreList($this->getFileNameWithoutSVNUrl($file))) { continue; }
 
 			if($sts == 'D') {
 				$delFiles[] = $file;
