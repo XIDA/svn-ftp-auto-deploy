@@ -65,6 +65,8 @@ class Svn
     }
 
 	private function isInIgnoreList($filePath) {
+		if(!isset($this->config['svn_ignore'])) { return false; }
+		
 		foreach($this->config['svn_ignore'] as $cIgnore) {
 			//e cho $filePath . ' --- ' . $cIgnore . PHP_EOL;
 			$pos = strpos(strtolower($filePath),strtolower($cIgnore));
