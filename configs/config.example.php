@@ -1,31 +1,25 @@
 <?php
+	return array(
+		'name'			 => 'example name here',
+		'verbose'		 => false,					// Logging
+		'debug'			 => false,					// Mode
+		'version_file'	 => 'deploy.ver',
+		'svn' => array(							// SVN
+			'root'		 => '',
+			'subfolder'	 => '',
+			'ignore'	 => array(
+				'nbproject/'
+			),
+			'username'	 => '',
+			'password'	 => '',
+		),
+		'ftp' => array(								// FTP
 
-
-return array(
-	
-	'name' => 'example name here',
-	
-	// SVN
-	'svn_root' => '',
-	'svn_subfolder' => '',
-	'svn_ignore' => array (
-		'nbproject/'
-	),			
-	'svn_username' => '',
-	'svn_password' => '',
-	
-	// FTP
-	'ftp_root' => '',
-	'version_file' => '/deploy.ver',
-	
-	// FTP Auth
-    'server' => '',
-    'user' => '',
-    'pass' => '',
-	
-    // Logging
-    'verbose' => false,
-    
-    // Mode
-    'debug' => false
-);
+			'root' => '',
+			// FTP Auth
+			'server'	 => '',
+			'username'	 => '',
+			'password'	 => '',
+		)
+	);
+?>

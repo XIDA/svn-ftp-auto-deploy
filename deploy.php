@@ -1,27 +1,25 @@
 <?php
-/***
- * DustinGraham.com Deploy Script
- *  - Checks ftp for current version
- *  - "Exports" changes from SVN
- *  - Uploads via ftp and updates version file with latest SVN version.
- *
- */
+namespace XDDeploy;
 
-if(sizeOf($argv) < 2) {
-	echo 'error: please add the config file as argument 1' . PHP_EOL;
-	exit;
-}
+// System Start Time
+define('START_TIME', microtime(true));
 
-$configName = $argv[1];
+// System Start Memory
+define('START_MEMORY_USAGE', memory_get_usage());
 
-$config = require('configs/config_' . $configName . '.php');
+// Extension of all PHP files
+define('EXT', '.php');
 
-require('classes/Settings.php');
-require('classes/svn.php');
-require('classes/ftp.php');
-require('classes/filesystem.php');
-require('classes/Logger.php');
+// Directory separator (Unix-Style works on all OS)
+define('DS', '/');
 
+// Absolute path to the root folder
+define('ROOT', realpath(__DIR__) . DS);
+
+require(ROOT . 'XDDeploy/Loader.php');
+new Loader();
+
+$config = new Config\Config($argv[1]);
 
 $fs = new FileSystem($config);
 $svn = new Svn($fs, $config);
@@ -29,14 +27,14 @@ $ftp = new Ftp($fs, $config);
 
 $ftpVer = $ftp->getCurrentVersion();
 $svnLatestVer = $svn->getCurrentVersion();
- 
+
 if($ftpVer == "") {
 	Logger::e('error: could not get version from FTP');
 	exit;
 }
 
 if($ftpVer  == -1) {
-	echo 'No ' . $config['version_file'] . ' file found on the ftp, is this your first commit? (type y to continue)' . PHP_EOL;
+	echo 'No ' . $config->getVersionFile() . ' file found on the ftp, is this your first commit? (type y to continue)' . PHP_EOL;
 	$handle = fopen ("php://stdin","r");
 	$line = fgets($handle);
 	if(trim($line) != 'y'){
@@ -60,8 +58,7 @@ if(sizeOf($argv) > 2) {
 Logger::i('ftp version: ' . $ftpVer);
 Logger::i('svn target version: ' . $targetVer);
 
-if ($config['debug'])
-{
+if ($config->isDebug()) {
     var_dump($ftpVer, $targetVer, $config);
 	exit;
 }
@@ -75,12 +72,10 @@ if ($targetVer != $ftpVer) {
     // Create a .ver file
 	$fs->addSvnVersion($targetVer);
 
-    $changes['files'][] = $config['version_file'];
+    $changes['files'][] = $config->getVersionFile();
 
     $ftp->putChanges($changes);
-
 	Logger::i('done');
-
 } else {
 	Logger::i('Nothing to do - Up to date');
 }
