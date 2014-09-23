@@ -19,6 +19,9 @@
 	require(ROOT . 'XDDeploy/Loader.php');
 	new Loader();
 
-	$options = (getopt("c:v:"));
-	new Deploy($options['c'] ?: $argv[1], $options['v'] ?: $argv[2]);
+	$options	= (getopt("c:v:"));
+	$config		= $options['c'] ?: $argv[1];
+	$version	= ($options['v'] || $options['c']) ? $options['v'] : $argv[2];
+
+	new Deploy($config, $version);
 ?>
