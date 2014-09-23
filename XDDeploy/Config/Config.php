@@ -28,15 +28,13 @@
 		private $config;
 
 		/**
-		 *
-		 *	@param	string		$name		Name of the config
+		 *	Setup single config
+		 * 
+		 *	@param	string		$config		Name of the config
 		 *
 		 *	@return \XDDeploy\Config\Config
 		 */
-		public function __construct($name) {
-			$file = $this->checkFile($name);
-
-			$config = require_once($file);
+		public function __construct($config) {
 			$this->config = $config;
 			$this->validateConfig();
 
@@ -51,32 +49,6 @@
 		 */
 		private function validateConfig() {
 			//
-		}
-
-		/**
-		 *
-		 * @param type $name
-		 * @return \XDDeploy\Config\RecursiveIteratorIterator
-		 */
-		private function checkFile($name) {
-			$file = ROOT . 'configs/config_' . $name . '.php';
-			if(!file_exists($file)) {
-				$path	 = ROOT . 'configs';
-				$objects =	new \RecursiveIteratorIterator(
-						new \RecursiveDirectoryIterator(
-							$path,
-							\FilesystemIterator::SKIP_DOTS
-						),
-					\RecursiveIteratorIterator::SELF_FIRST
-				);
-
-				Logger::n(PHP_EOL . 'No or invalid config file paramaeter. Choose on of the following configs as first parameter:');
-				foreach($objects as $file) {
-					Logger::n(' - ' . str_replace('config.', '', $file->getBasename('.' . $file->getExtension())));
-				}
-				die();
-			}
-			return $file;
 		}
 
 		/**
