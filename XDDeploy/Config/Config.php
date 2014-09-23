@@ -59,7 +59,7 @@
 		 * @return \XDDeploy\Config\RecursiveIteratorIterator
 		 */
 		private function checkFile($name) {
-			$file = ROOT . 'configs/config.' . $name . '.php';
+			$file = ROOT . 'configs/config_' . $name . '.php';
 			if(!file_exists($file)) {
 				$path	 = ROOT . 'configs';
 				$objects =	new \RecursiveIteratorIterator(
