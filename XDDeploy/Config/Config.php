@@ -31,16 +31,22 @@
 		 *	Setup single config
 		 *
 		 *	@param	string		$config		Name of the config
+		 *	@param	boolean		$preset		Is this a preset configuration?
 		 *
 		 *	@return \XDDeploy\Config\Config
 		 */
-		public function __construct($config) {
+		public function __construct($config, $preset = false) {
 			$this->config = $config;
 			$this->mergeWithPreset();
+
 			$this->validateConfig();
 
-			$this->ftp = new Ftp($this->config['ftp']);
-			$this->svn = new Svn($this->config['svn']);
+			if(!$preset || $this->config['ftp']) {
+				$this->ftp = new Ftp($this->config['ftp']);
+			}
+			if(!$preset || $this->config['svn']) {
+				$this->svn = new Svn($this->config['svn']);
+			}
 
 			return $this;
 		}

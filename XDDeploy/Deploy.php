@@ -11,20 +11,23 @@
 
 		/**
 		 *	Deploy for config
-		 * 
-		 *	@param	string		$name
-		 *	@param	int			$version
+		 *
+		 *	@param	string		$name			Name of the configuration
+		 *	@param	int			$version		Version to deploy
 		 */
 		public function __construct($name, $version = false) {
 			$configs	= Config\Manager::getConfigByName($name);
 
 			foreach($configs as $config) {
+				echo PHP_EOL;
+				Logger::e('--- Deploy - ' . $config->getName() . ' - Start ---');
 				$this->deploy($config, $version);
+				Logger::e('--- Deploy - ' . $config->getName() . ' - End -----');
 			}
 		}
 
 		/**
-		 *	Deploy
+		 *	Deploy to ftp server
 		 *
 		 *	@param	Config\Config	$config
 		 *	@param	string			$version	Default: the newest version.
@@ -56,31 +59,30 @@
 			}
 
 			if($version) {
-				$targetVer = $version;
-				if($targetVer > $svnLatestVer) {
+				if($version > $svnLatestVer) {
 					Logger::e('target revison is greater than latest svn revision ' . $svnLatestVer);
 					exit;
 				}
 			} else {
-				$targetVer = $svn->getCurrentVersion();
+				$version = $svn->getCurrentVersion();
 			}
 
 			Logger::i('ftp version: ' . $ftpVer);
-			Logger::i('svn target version: ' . $targetVer);
+			Logger::i('svn target version: ' . $version);
 
 			if ($config->isDebug()) {
-				var_dump($ftpVer, $targetVer, $config);
+				var_dump($ftpVer, $version, $config);
 				exit;
 			}
 
-			if ($targetVer != $ftpVer) {
+			if ($version != $ftpVer) {
 				Logger::i('collecting changed files');
-				$changes = $svn->checkoutChanges($targetVer, $ftpVer);
+				$changes = $svn->checkoutChanges($version, $ftpVer);
 
 				Logger::i('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
 
 				// Create a .ver file
-				$fs->addSvnVersion($targetVer);
+				$fs->addSvnVersion($version);
 
 				$changes['files'][] = $config->getVersionFile();
 

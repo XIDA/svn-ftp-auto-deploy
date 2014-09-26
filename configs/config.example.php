@@ -22,6 +22,15 @@
 				'username'	 => '',
 				'password'	 => '',
 			)
+		),
+		array(
+			'preset' => 'example',
+			'ftp'	 => array(
+				'root'		 => 'framework',
+				'server'	 => '',
+				'username'	 => '',
+				'password'	 => '',
+			)
 		)
 	);
 ?>
