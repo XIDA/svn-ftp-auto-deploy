@@ -1,6 +1,6 @@
 <?php
 	namespace XDDeploy\Config;
-	use XDDeploy\Logger;
+	use XDDeploy\Utils\Logger;
 
 	/**
 	 * 	Deploy Configuration
@@ -29,26 +29,57 @@
 
 		/**
 		 *	Setup single config
-		 * 
+		 *
 		 *	@param	string		$config		Name of the config
 		 *
 		 *	@return \XDDeploy\Config\Config
 		 */
 		public function __construct($config) {
 			$this->config = $config;
+			$this->mergeWithPreset();
 			$this->validateConfig();
 
-			$this->ftp = new Ftp($config['ftp']);
-			$this->svn = new Svn($config['svn']);
+			$this->ftp = new Ftp($this->config['ftp']);
+			$this->svn = new Svn($this->config['svn']);
 
 			return $this;
+		}
+
+		/**
+		 *	Merge the config with a preset
+		 */
+		private function mergeWithPreset() {
+			if($this->getPreset()) {
+				$preset			= Manager::getPresetByName($this->getPreset());
+				$this->config	= array_replace_recursive($preset->getConfig(), $this->config);
+			}
 		}
 
 		/**
 		 *	Validate all required paramaters
 		 */
 		private function validateConfig() {
-			//
+			if(!$this->getName()) {
+				Logger::configError("Property 'name' is required.");
+			}
+		}
+
+		/**
+		 *	Get the array from file
+		 *
+		 *	@return array
+		 */
+		public function getConfig() {
+			return $this->config;
+		}
+
+		/**
+		 *	Get preset name
+		 *
+		 *	@return string
+		 */
+		public function getPreset() {
+			return $this->config['preset'];
 		}
 
 		/**
@@ -61,12 +92,13 @@
 		}
 
 		/**
-		 *	Get version file name
+		 *	Get version file name.
+		 *	Default is 'deploy.ver'
 		 *
 		 *	@return string
 		 */
 		public function getVersionFile() {
-			return $this->config['version_file'];
+			return $this->config['version_file'] ?: 'deploy.ver';
 		}
 
 		/**

@@ -1,5 +1,6 @@
 <?php
 	namespace XDDeploy;
+	use XDDeploy\Utils\Logger;
 
 	/**
 	 * 	Deploy
@@ -8,26 +9,17 @@
 	 */
 	class Deploy {
 
-		const CONFIG_FILE_BASE = 'config_';
-		const CONFIG_DIRNAME = 'configs';
-
 		/**
-		 *
-		 * @param type $name
-		 * @param type $version
+		 *	Deploy for config
+		 * 
+		 *	@param	string		$name
+		 *	@param	int			$version
 		 */
 		public function __construct($name, $version = false) {
-			$file		= $this->checkConfigFile($name);
-			$configArray = require_once($file);
-
-			if(!is_array($configArray[0])) {
-				$configs[0] = $configArray;
-			} else {
-				$configs = $configArray;
-			}
+			$configs	= Config\Manager::getConfigByName($name);
 
 			foreach($configs as $config) {
-				$this->deploy(new Config\Config($config), $version);
+				$this->deploy($config, $version);
 			}
 		}
 
@@ -52,11 +44,11 @@
 			}
 
 			if($ftpVer  == -1) {
-				echo 'No ' . $config->getVersionFile() . ' file found on the ftp, is this your first commit? (type y to continue)' . PHP_EOL;
+				Logger::i('No ' . $config->getVersionFile() . ' file found on the ftp, is this your first commit? (type y to continue)');
 				$handle = fopen ("php://stdin","r");
 				$line = fgets($handle);
 				if(trim($line) != 'y'){
-					echo "ABORTING!\n";
+					Logger::e("ABORTING!");
 					exit;
 				}
 				echo PHP_EOL;
@@ -99,39 +91,6 @@
 			}
 
 			$fs->removeTempFolder();
-		}
-
-		/**
-		 *	Check the config file for this deploy
-		 *
-		 *	@param	string $name		Config name
-		 *
-		 *	@return string	Config File name
-		 */
-		private function checkConfigFile($name) {
-			$file = self::CONFIG_FILE_BASE . $name . EXT;
-
-			$path	 = ROOT . self::CONFIG_DIRNAME;
-			$objects =	new \RecursiveIteratorIterator(
-					new \RecursiveDirectoryIterator(
-						$path,
-						\FilesystemIterator::SKIP_DOTS
-					),
-				\RecursiveIteratorIterator::SELF_FIRST
-			);
-			$log = null;
-
-			foreach($objects as $filename => $fileObject) {
-				if($fileObject->getBasename() == $file) {
-					return $filename;
-				} else if(strpos($filename, self::CONFIG_FILE_BASE) !== false && $fileObject->getExtension() == 'php') {
-					$log .= ' -c ' . str_replace(self::CONFIG_FILE_BASE, '', $fileObject->getBasename('.' . $fileObject->getExtension())) . PHP_EOL;
-				}
-			}
-
-			Logger::n(PHP_EOL . 'No or invalid -c paramaeter. Choose on of the following configs for the -c parameter:');
-			Logger::n($log ?: 'No config available');
-			die();
 		}
 	}
 ?>

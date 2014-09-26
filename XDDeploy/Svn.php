@@ -1,5 +1,6 @@
 <?php
 	namespace XDDeploy;
+	use XDDeploy\Utils\Logger;
 
 	class Svn {
 
@@ -68,7 +69,7 @@
 				$pos = strpos(strtolower($filePath), strtolower($cIgnore));
 				//e cho $pos . PHP_EOL . PHP_EOL;
 				if ($pos !== false) {
-					echo 'Ignoring: ' . $filePath . PHP_EOL;
+					Logger::i('Ignoring: ' . $filePath);
 					return true;
 				}
 			}
@@ -114,7 +115,7 @@
 			if (sizeOf($out) == 0) {
 				Logger::e('there is a problem with the path you a trying to check out');
 				Logger::e('use the following command to find out what\'s wrong');
-				echo $cmd . PHP_EOL;
+				Logger::i($cmd);
 				exit;
 			}
 
@@ -130,7 +131,7 @@
 			if ($firstRevisionOfSVNPath > $targetVer) {
 				Logger::e('you are trying to update to revision ' . $targetVer . ' but the first revision of your svn path is ' . $firstRevisionOfSVNPath);
 				Logger::e('use the following command to find out what\'s wrong');
-				echo $cmd . PHP_EOL;
+				Logger::i($cmd);
 				exit;
 			}
 

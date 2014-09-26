@@ -1,6 +1,6 @@
 <?php
 	namespace XDDeploy\Config;
-	use XDDeploy\Logger;
+	use XDDeploy\Utils\Logger;
 
 	/**
 	 * 	FTP Configs
@@ -29,14 +29,11 @@
 		 */
 		private function validateConfig() {
 			if(!$this->getPassword()) {
-				Logger::e('The FTP Password is not set!');
-				die();
+				Logger::configError("Property 'ftp->password' is required.");
 			} elseif(!$this->getServer()) {
-				Logger::e('The FTP Server is not set!');
-				die();
+				Logger::configError("Property 'ftp->server' is required.");
 			} elseif(!$this->getUser()) {
-				Logger::e('The FTP Username is not set!');
-				die();
+				Logger::configError("Property 'ftp->user' is required.");
 			}
 		}
 

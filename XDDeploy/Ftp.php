@@ -1,5 +1,6 @@
 <?php
 	namespace XDDeploy;
+	use XDDeploy\Utils\Logger;
 
 	class Ftp {
 
@@ -20,7 +21,7 @@
 
 		protected function log($msg) {
 			if ($this->config->isVerbose()) {
-				echo "\r\n[FTP] " . $msg . "\r\n";
+				Logger::n("[FTP] " . $msg);
 			}
 		}
 
