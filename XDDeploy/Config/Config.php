@@ -41,10 +41,10 @@
 
 			$this->validateConfig();
 
-			if(!$preset || $this->config['ftp']) {
+			if(!$preset || isset($this->config['ftp'])) {
 				$this->ftp = new Ftp($this->config['ftp']);
 			}
-			if(!$preset || $this->config['svn']) {
+			if(!$preset || isset($this->config['svn'])) {
 				$this->svn = new Svn($this->config['svn']);
 			}
 
@@ -85,7 +85,11 @@
 		 *	@return string
 		 */
 		public function getPreset() {
-			return $this->config['preset'];
+			if(isset($this->config['preset'])) {
+				return $this->config['preset'];
+			}
+
+			return null;
 		}
 
 		/**
