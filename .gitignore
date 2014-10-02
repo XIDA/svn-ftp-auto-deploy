@@ -2,3 +2,4 @@ config_*
 preset_*
 deploy.ver
 /nbproject/private/
+configs/project_*
