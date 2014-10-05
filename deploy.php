@@ -16,6 +16,8 @@
 	// Absolute path to the root folder
 	define('ROOT', realpath(__DIR__) . DS);
 
+	error_reporting(E_ALL);
+
 	require(ROOT . 'XDDeploy/Loader.php');
 	new Loader();
 
@@ -24,23 +26,16 @@
 	$version = "";
 
 	// checking command line parameters
-	if(sizeOf($options) > 0) {
-
-		if($options['c']) {
-			$config	 = $options['c'];
-
-
-			if($options['v']) {
-				$version = $options['v'];
-			}
+	if(sizeOf($options) > 0 && $options['c']) {
+		$config	 = $options['c'];
+		if($options['v']) {
+			$version = $options['v'];
 		}
-
 	} else {
-		if(sizeOf($argv) > 1) {
+		if(isset($argv[1])) {
 			$config = $argv[1];
 		}
-
-		if(sizeOf($argv) > 2) {
+		if(isset($argv[2])) {
 			$version = $argv[2];
 		}
 	}

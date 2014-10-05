@@ -6,27 +6,12 @@
 	 *
 	 * 	@author XIDA
 	 */
-	class Svn {
-		/**
-		 *	Store svn config
-		 *	@var array
-		 */
-		private $config;
-
-		/**
-		 *	Setup Config
-		 *
-		 *	@param array		$config
-		 */
-		public function __construct($config) {
-			$this->config = $config;
-			$this->validateConfig();
-		}
+	class Svn extends Base {
 
 		/**
 		 *	Validate all required paramaters
 		 */
-		private function validateConfig() {
+		protected function validateConfig() {
 			//
 		}
 
@@ -36,7 +21,7 @@
 		 *	@return string
 		 */
 		public function getRoot() {
-			return $this->config['root'];
+			return $this->getValue('root');
 		}
 
 		/**
@@ -45,7 +30,7 @@
 		 *	@return string
 		 */
 		public function getSubfolder() {
-			return $this->config['subfolder'];
+			return $this->getValue('subfolder');
 		}
 
 		/**
@@ -54,7 +39,7 @@
 		 *	@return array
 		 */
 		public function getIgnore() {
-			return (array) $this->config['ignore'];
+			return (array) $this->getValue('ignore');
 		}
 
 		/**
@@ -63,7 +48,7 @@
 		 *	@return string
 		 */
 		public function getUser() {
-			return $this->config['username'];
+			return $this->getValue('username');
 		}
 
 		/**
@@ -72,7 +57,7 @@
 		 *	@return string
 		 */
 		public function getPassword() {
-			return $this->config['password'];
+			return $this->getValue('password');
 		}
 	}
 ?>

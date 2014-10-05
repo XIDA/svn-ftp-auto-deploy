@@ -5,12 +5,12 @@
 	class Svn {
 
 		/**
-		 * @var FileSystem
+		 *	@var FileSystem
 		 */
 		private $fs;
 
 		/**
-		 * @var Config\Config
+		 *	@var Config\Config
 		 */
 		private $config;
 		private $loginString;
@@ -89,15 +89,13 @@
 		}
 
 		protected function getSvnVersion() {
-			$cmd = 'svn info ' . $this->loginString . $this->config->svn->getRoot();
-			$x	 = exec($cmd, $result);
-
-			$str = implode(' ', $result);
-
-			//var_dump($result,$cmd, $x, $str);
-			preg_match('/Revision: ([0-9]+)/', $str, $matches);
-
-			return $matches[1];
+			$cmd		= 'svn info --xml ' . $this->loginString . $this->config->svn->getRoot();
+			$result		= shell_exec($cmd);
+			$xml		= new \SimpleXMLElement($result, LIBXML_NOERROR + LIBXML_ERR_FATAL + LIBXML_ERR_NONE);
+			if(!$xml) {
+				Logger::abort('SVN ERROR!');
+			}
+			return $xml->entry['revision'];
 		}
 
 		protected function getChangeLog($targetVer, $ftpVersion) {
@@ -107,6 +105,7 @@
 
 			//check if the file is there at all
 			$cmd = 'svn log ' . $this->loginString . '-r 1:HEAD --limit 1 ' . $repo;
+
 
 			$exec = exec($cmd, $out);
 

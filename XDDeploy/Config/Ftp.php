@@ -7,27 +7,12 @@
 	 *
 	 * 	@author XIDA
 	 */
-	class Ftp {
-		/**
-		 *	Store FTP Configurations
-		 *	@var array
-		 */
-		private $config;
-
-		/**
-		 *	Setup FTP config
-		 *
-		 *	@param	array		$config
-		 */
-		public function __construct($config) {
-			$this->config = $config;
-			$this->validateConfig();
-		}
+	class Ftp extends Base {
 
 		/**
 		 *	Validate all required paramaters
 		 */
-		private function validateConfig() {
+		protected function validateConfig() {
 			if(!$this->getPassword()) {
 				Logger::configError("Property 'ftp->password' is required.");
 			} elseif(!$this->getServer()) {
@@ -43,7 +28,7 @@
 		 *	@return string
 		 */
 		public function getRoot() {
-			return $this->config['root'];
+			return $this->getValue('root');
 		}
 
 		/**
@@ -52,7 +37,7 @@
 		 *	@return string
 		 */
 		public function getUser() {
-			return $this->config['username'];
+			return $this->getValue('username');
 		}
 
 		/**
@@ -61,7 +46,7 @@
 		 *	@return string
 		 */
 		public function getPassword() {
-			return $this->config['password'];
+			return $this->getValue('password');
 		}
 
 		/**
@@ -70,7 +55,17 @@
 		 *	@return string
 		 */
 		public function getServer() {
-			return $this->config['server'];
+			return $this->getValue('server');
+		}
+
+		/**
+		 *	Number of retries to upload a file via FTP
+		 *	Default: 3
+		 *
+		 *	@return int
+		 */
+		public function getUploadRetries() {
+			return (int) $this->getValue('uploadRetries') ?: 3;
 		}
 	}
 ?>

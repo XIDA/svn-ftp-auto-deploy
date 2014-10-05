@@ -10,6 +10,11 @@
 
 		public static $LOG_IN_COLOR = false;
 
+		public static function abort($text = '') {
+			self::e('Exit: ' . $text);
+			die();
+		}
+
 		public static function configError($error) {
 			self::e('[Config Error] - ' . $error);
 		}

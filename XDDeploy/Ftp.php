@@ -97,23 +97,28 @@
 					continue;
 				}
 
-
 				// upload the file
 				$this->log('Source: ' . $source);
 				$this->log('Destination: ' . $source);
 
-				Logger::n('uploading ' . $destination . ' ... ', true);
+				$i = 0;
+				// retry uploading..
+				while($i <= $this->config->ftp->getUploadRetries()) {
+					$i++;
+					Logger::n('uploading ' . $destination . ' ... ', true);
+					$upload = ftp_put($conn_id, basename($destination), $source, FTP_BINARY);
 
-				$upload = ftp_put($conn_id, basename($destination), $source, FTP_BINARY);
-
-				//var_dump($upload, $change, $destination, $source);
-				// check upload status
-				if (!$upload) {
-					Logger::n('FTP upload has failed! ( ' . $upload . ' )');
-					exit;
-				} else {
-					//e cho "Uploaded $source to $destination <br />";
-					Logger::n('done');
+					// check upload status
+					if (!$upload) {
+						Logger::n('FTP upload has failed! ( ' . $upload . ' ) Try: ' . $i);
+						// reconnect and try to upload again
+						$conn_id = $this->ftpGetConnection();
+						continue;
+					} else {
+						//e cho "Uploaded $source to $destination <br />";
+						Logger::n('done');
+						break;
+					}
 				}
 			}
 

@@ -7,7 +7,7 @@
 	 *
 	 * 	@author XIDA
 	 */
-	class Config {
+	class Config extends Base {
 
 		/**
 		 *	FTP Configuration
@@ -22,74 +22,36 @@
 		public $svn;
 
 		/**
-		 *	Conig from file
-		 *	@var array
-		 */
-		private $config;
-
-		/**
-		 *	Setup single config
+		 *	Single deploy config
 		 *
-		 *	@param	string		$config		Name of the config
+		 *	@param	array		$data		Configuration array from file
 		 *	@param	boolean		$preset		Is this a preset configuration?
 		 *
 		 *	@return \XDDeploy\Config\Config
 		 */
-		public function __construct($config, $preset = false) {
-			$this->config = $config;
-			$this->mergeWithPreset();
+		public function __construct($data, $preset = false) {
+			parent::__construct($data, $preset);
 
-			$this->validateConfig();
-
-			if(!$preset || isset($this->config['ftp'])) {
-				$this->ftp = new Ftp($this->config['ftp']);
+			// create a new ftp configuration object, if the key exists
+			if(!$this->isPreset() || $this->getValue('ftp')) {
+				$this->ftp = new Ftp($this->getValue('ftp'));
 			}
-			if(!$preset || isset($this->config['svn'])) {
-				$this->svn = new Svn($this->config['svn']);
+
+			// create a new svn configuration object, if the key exists
+			if(!$this->isPreset()  || $this->getValue('svn')) {
+				$this->svn = new Svn($this->getValue('svn'));
 			}
 
 			return $this;
 		}
 
 		/**
-		 *	Merge the config with a preset
-		 */
-		private function mergeWithPreset() {
-			if($this->getPreset()) {
-				$preset			= Manager::getPresetByName($this->getPreset());
-				$this->config	= array_replace_recursive($preset->getConfig(), $this->config);
-			}
-		}
-
-		/**
 		 *	Validate all required paramaters
 		 */
-		private function validateConfig() {
+		protected function validateConfig() {
 			if(!$this->getName()) {
 				Logger::configError("Property 'name' is required.");
 			}
-		}
-
-		/**
-		 *	Get the array from file
-		 *
-		 *	@return array
-		 */
-		public function getConfig() {
-			return $this->config;
-		}
-
-		/**
-		 *	Get preset name
-		 *
-		 *	@return string
-		 */
-		public function getPreset() {
-			if(isset($this->config['preset'])) {
-				return $this->config['preset'];
-			}
-
-			return null;
 		}
 
 		/**
@@ -98,7 +60,7 @@
 		 *	@return string
 		 */
 		public function getName() {
-			return $this->config['name'];
+			return $this->getValue('name');
 		}
 
 		/**
@@ -108,7 +70,7 @@
 		 *	@return string
 		 */
 		public function getVersionFile() {
-			return $this->config['version_file'] ?: 'deploy.ver';
+			return $this->getValue('version_file') ?: 'deploy.ver';
 		}
 
 		/**
@@ -117,7 +79,7 @@
 		 *	@return boolean
 		 */
 		public function isDebug() {
-			return (boolean) $this->config['debug'];
+			return (boolean) $this->getValue('debug');
 		}
 
 		/**
@@ -126,7 +88,25 @@
 		 *	@return boolean
 		 */
 		public function isVerbose() {
-			return (boolean) $this->config['verbose'];
+			return (boolean) $this->getValue('verbose');
+		}
+
+		/**
+		 *	Execute after deploy commands
+		 *
+		 *	@return array
+		 */
+		public function getExecuteAfter() {
+			return (array) $this->getValue('executeAfter');
+		}
+
+		/**
+		 *	Execute before deploy commands
+		 *
+		 *	@return array
+		 */
+		public function getExecuteBefore() {
+			return (array) $this->getValue('executeBefore');
 		}
 	}
 ?>

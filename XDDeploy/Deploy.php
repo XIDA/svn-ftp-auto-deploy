@@ -16,13 +16,29 @@
 		 *	@param	int			$version		Version to deploy
 		 */
 		public function __construct($name, $version = false) {
+			Logger::n('Welcome to the XIDA SVN-FTP Deploy tool' . PHP_EOL);
 			$configs	= Config\Manager::getConfigByName($name);
 
 			foreach($configs as $config) {
 				echo PHP_EOL;
 				Logger::e('--- Deploy - ' . $config->getName() . ' - Start ---');
+				$this->executeUrls($config->getExecuteBefore());
 				$this->deploy($config, $version);
+				$this->executeUrls($config->getExecuteAfter());
 				Logger::e('--- Deploy - ' . $config->getName() . ' - End -----');
+			}
+		}
+
+		/**
+		 *	Execute URLs
+		 *
+		 *	@param	array			$commands
+		 */
+		private function executeUrls($commands) {
+			$urls = filter_var_array($commands, FILTER_SANITIZE_URL);
+			foreach($urls as $url) {
+				$result = file_get_contents($url);
+				Logger::n($result);
 			}
 		}
 
@@ -42,17 +58,15 @@
 			$svnLatestVer = $svn->getCurrentVersion();
 
 			if($ftpVer == "") {
-				Logger::e('error: could not get version from FTP');
-				exit;
+				Logger::abort('error: could not get version from FTP');
 			}
 
 			if($ftpVer  == -1) {
-				Logger::i('No ' . $config->getVersionFile() . ' file found on the ftp, is this your first commit? (type y to continue)');
+				Logger::i('No "' . $config->getVersionFile() . '" file found on the ftp, is this your first commit? (type y to continue)');
 				$handle = fopen ("php://stdin","r");
 				$line = fgets($handle);
 				if(trim($line) != 'y'){
-					Logger::e("ABORTING!");
-					exit;
+					Logger::abort("ABORTING!");
 				}
 				echo PHP_EOL;
 				$ftpVer = 0;
@@ -60,8 +74,7 @@
 
 			if($version) {
 				if($version > $svnLatestVer) {
-					Logger::e('target revison is greater than latest svn revision ' . $svnLatestVer);
-					exit;
+					Logger::abort('target revison is greater than latest svn revision ' . $svnLatestVer);
 				}
 			} else {
 				$version = $svn->getCurrentVersion();

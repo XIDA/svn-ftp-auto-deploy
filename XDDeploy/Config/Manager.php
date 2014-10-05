@@ -13,22 +13,25 @@
 		/**
 		 *	Name of the directorie containing config relevant files
 		 */
-		const CONFIG_DIRNAME = 'configs';
+		const DIRNAME = 'configs';
 
 		/**
 		 *	Extension of config/preset files
 		 */
-		const CONFIG_EXTENSION = 'php';
+		const FILE_EXTENSION = 'php';
 
 		/**
 		 *	Base name of the preset files
 		 */
-		const PRESET_FILE_BASE = 'preset_';
+		const PRESET_NAME = 'preset';
 
 		/**
 		 *	Base name of the config files
 		 */
-		const CONFIG_FILE_BASE = 'config_';
+		const CONFIG_NAME = 'config';
+
+
+		const NAME_SEPARATOR = '_';
 
 		/**
 		 *	Stores all files as \RecursiveDirectoryIterator Objects
@@ -64,7 +67,7 @@
 		 */
 		public static function getConfigFiles() {
 			if(!self::$configFiles) {
-				self::getFiles();
+				self::searchForFiles();
 			}
 			return (array) self::$configFiles;
 		}
@@ -76,7 +79,7 @@
 		 */
 		public static function getPresetFiles() {
 			if(!self::$presetFiles) {
-				self::getFiles();
+				self::searchForFiles();
 			}
 			return (array) self::$presetFiles;
 		}
@@ -86,16 +89,16 @@
 		 *	If not found let the user now the possible options
 		 *
 		 *	@param	string		$name		File name
-		 *	@param	string		$type		PRESET_FILE_BASE or CONFIG_FILE_BASE
+		 *	@param	string		$type		PRESET_NAME or CONFIG_NAME
 		 *
 		 *	@return Full file path as string
 		 */
 		private static function getFileByName($name, $type) {
 			// build filename
-			$file	= $type . $name . EXT;
+			$file	= $type . self::NAME_SEPARATOR . $name . "." . self::FILE_EXTENSION;
 
 			// select files according to the type
-			$files	= ($type == self::CONFIG_FILE_BASE) ? self::getConfigFiles() : self::getPresetFiles();
+			$files	= ($type == self::CONFIG_NAME) ? self::getConfigFiles() : self::getPresetFiles();
 
 			// search for the config name
 			foreach($files as $fileObject) {
@@ -104,11 +107,30 @@
 				}
 			}
 
+
 			// if no file is found output possible values to the console
-			$possibleValues = PHP_EOL . ' -c ' . implode(PHP_EOL . ' -c ', array_keys($files));
-			Logger::n('No or invalid config/preset paramaeter');
-			Logger::n('Choose on of the following configs/presets:' . $possibleValues);
-			die();
+			$possibleFiles = array_keys($files);
+			Logger::configError('Empty or invalid "' . $type . '" paramaeter' . PHP_EOL . 'Choose on of the following options:');
+			foreach($possibleFiles as $index => $value) {
+				Logger::n($index . ' - ' . $value);
+			}
+
+			// wait for user input, to select a configuraiton via number
+			Logger::n('Type a number: ', true);
+			$input = trim(fgets(STDIN));
+
+			if(isset($possibleFiles[$input])) {
+				// let the user confirm the selection
+				Logger::n('Selected the ' . $type . ' "' . $possibleFiles[$input] . '". Type "y" to continue: ', true);
+				$confirm = trim(fgets(STDIN));
+
+				if($confirm == 'y' || $confirm == 'yes') {
+					return $files[$possibleFiles[$input]];
+				} else {
+					Logger::abort();
+				}
+			}
+			Logger::abort('You entered a invalid number for a ' . $type . '!');
 		}
 
 
@@ -121,21 +143,21 @@
 		 */
 		public static function getConfigByName($name) {
 			// search for the filename in the config files
-			$file			= self::getFileByName($name, self::CONFIG_FILE_BASE);
+			$file			= self::getFileByName($name, self::CONFIG_NAME);
 
 			// load the config file
 			Logger::configInfo('Loading config "' . $file . '" ...');
-			$configArray	= require_once($file);
+			$data			= require_once($file);
 
 			// array for loop is needed
-			$configs		= !is_array($configArray[0]) ? array($configArray) : $configArray;
+			$configData		= !is_array($data[0]) ? array($data) : $data;
 
 			// store all configs in a array
 			$deployConfigs  = array();
-			foreach($configs as $config) {
-				$config = new Config($config);
-				$deployConfigs[] = $config;
-				Logger::configNote('Loaded Config with name ' . $config->getName());
+			foreach($configData as $config) {
+				$configObject	 = new Config($config);
+				$deployConfigs[] = $configObject;
+				Logger::configNote('Loaded Config with name ' . $configObject->getName());
 			}
 			return $deployConfigs;
 		}
@@ -144,13 +166,14 @@
 		 *	Get a config preset by a specified name
 		 *
 		 *	@param	string		$name		Preset file name
+		 *	@param	string		$class		Name of the object, to create a preset for
 		 *
-		 *	@return array
+		 *	@return a config object, defined by the class parameter
 		 */
-		public static function getPresetByName($name) {
+		public static function getPresetByName($name, $class) {
 			// search for the filename in the config files
-			$file = self::getFileByName($name, self::PRESET_FILE_BASE);
-			return new Config(require_once($file), true);
+			$file = self::getFileByName($name, self::PRESET_NAME);
+			return new $class(require_once($file), true);
 		}
 
 		/**
@@ -159,22 +182,28 @@
 		 *
 		 *	@return \RecursiveIteratorIterator
 		 */
-		private static function getFiles() {
-			if(!self::$files) {
-				self::$files = File::getFilesRecursive(ROOT . self::CONFIG_DIRNAME);
+		private static function searchForFiles() {
+			if(self::$files) {
+				return self::$files;
+			}
 
-				foreach(self::$files as $filename => $fileObject) {
-					if($fileObject->getExtension() != self::CONFIG_EXTENSION) {
-						continue;
-					}
+			// get all files from config dir
+			self::$files = File::getFilesRecursive(ROOT . self::DIRNAME);
 
-					if(strpos($filename, self::CONFIG_FILE_BASE) !== false) {
-						$name = str_replace(self::CONFIG_FILE_BASE, '', $fileObject->getBasename('.' . $fileObject->getExtension()));
-						self::$configFiles[$name] = $fileObject;
-					} else if(strpos($filename, self::PRESET_FILE_BASE) !== false) {
-						$name = str_replace(self::PRESET_FILE_BASE, '', $fileObject->getBasename('.' . $fileObject->getExtension()));
-						self::$presetFiles[$name] = $fileObject;
-					}
+			foreach(self::$files as $filename => $fileObject) {
+				// only files with allowed extension
+				if($fileObject->getExtension() != self::FILE_EXTENSION) {
+					continue;
+				}
+
+				// check if a file is a config or preset.
+				// save config/preset files in separate arrays
+				if(strpos($filename, self::CONFIG_NAME . self::NAME_SEPARATOR) !== false) {
+					$name = str_replace(self::CONFIG_NAME . self::NAME_SEPARATOR, '', $fileObject->getBasename('.' . $fileObject->getExtension()));
+					self::$configFiles[$name] = $fileObject;
+				} else if(strpos($filename, self::PRESET_NAME . self::NAME_SEPARATOR) !== false) {
+					$name = str_replace(self::PRESET_NAME . self::NAME_SEPARATOR, '', $fileObject->getBasename('.' . $fileObject->getExtension()));
+					self::$presetFiles[$name] = $fileObject;
 				}
 			}
 			return self::$files;
