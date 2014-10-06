@@ -174,10 +174,19 @@
 
 		private function ftpRecursiveDelete($conn_id, $directory) {
 			//if(ftp_size($conn_id, $directory) == -1) { return; }
+
+			$targetPath = $directory;
+
+			// deleting only works with absolute urls
+			$strpos = strpos($directory,'/');
+			if (!($strpos !== false && $strpos == 0)) {
+				$targetPath = "/" . $directory;
+			}
+
 			# here we attempt to delete the file/directory
-			if (!( @ftp_rmdir($conn_id, $directory) || @ftp_delete($conn_id, $directory) )) {
+			if (!( @ftp_rmdir($conn_id, $targetPath) || @ftp_delete($conn_id, $targetPath) )) {
 				# if the attempt to delete fails, get the file listing
-				$filelist = @ftp_nlist($conn_id, $directory);
+				$filelist = @ftp_nlist($conn_id, $targetPath);
 				//var_dump($filelist);exit;
 				# loop through the file list and recursively delete the FILE in the list
 				if ($filelist) {
@@ -212,7 +221,7 @@
 							@ftp_delete($conn_id, $file);
 						}
 					}
-					$this->ftpRecursiveDelete($conn_id, $directory);
+					$this->ftpRecursiveDelete($conn_id, $targetPath);
 				}
 			}
 		}
