@@ -105,7 +105,7 @@
 				// retry uploading..
 				while($i <= $this->config->ftp->getUploadRetries()) {
 					$i++;
-					Logger::n('uploading ' . $destination . ' ... ', true);
+					Logger::n('uploading ' . $destination . ' ... ', true, true);
 					$upload = ftp_put($conn_id, basename($destination), $source, FTP_BINARY);
 
 					// check upload status
@@ -116,7 +116,7 @@
 						continue;
 					} else {
 						//e cho "Uploaded $source to $destination <br />";
-						Logger::n('done');
+						Logger::n('done', false, true);
 						break;
 					}
 				}

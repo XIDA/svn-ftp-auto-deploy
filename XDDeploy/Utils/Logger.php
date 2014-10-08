@@ -11,7 +11,11 @@
 		public static $LOG_IN_COLOR = false;
 
 		public static function abort($text = '') {
-			self::e('Exit: ' . $text);
+			if($text) {
+				self::e('Exit: ' . $text);
+			} else {
+				self::e('Exit');
+			}
 			die();
 		}
 
@@ -31,16 +35,20 @@
 			self::l(self::colorize($text, 'FAILURE'), $noEndOfFile);
 		}
 
-		public static function n($text = "", $noEndOfFile = false) {
-			self::l(self::colorize($text, 'NOTE'), $noEndOfFile);
+		public static function n($text = "", $noEndOfFile = false, $timeStamp = false) {
+			self::l(self::colorize($text, 'NOTE'), $noEndOfFile, $timeStamp);
 		}
 
 		public static function i($text = "", $noEndOfFile = false) {
 			self::l(self::colorize($text, 'SUCCESS'), $noEndOfFile);
 		}
 
-		public static function l($text = "", $noEndOfFile = false) {
-			echo date('H:i:s') . " " . $text . ($noEndOfFile ? '' : PHP_EOL);
+		public static function l($text = "", $noEndOfFile = false, $timeStamp = false) {
+			$output = $text . ($noEndOfFile ? '' : PHP_EOL);
+			if($timeStamp) {
+				$output = date('H:i:s') . " " . $output;
+			}
+			echo $output;
 		}
 
 		private static function colorize($text, $status) {

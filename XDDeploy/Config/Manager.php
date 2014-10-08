@@ -110,18 +110,18 @@
 
 			// if no file is found output possible values to the console
 			$possibleFiles = array_keys($files);
-			Logger::configError('Empty or invalid "' . $type . '" paramaeter' . PHP_EOL . 'Choose on of the following options:');
+			Logger::configError('Empty or invalid "' . $type . '" parameter' . PHP_EOL . 'Choose on of the following options:');
 			foreach($possibleFiles as $index => $value) {
-				Logger::n($index . ' - ' . $value);
+				Logger::n($index . ' - ' . $value, false, false);
 			}
 
 			// wait for user input, to select a configuraiton via number
-			Logger::n('Type a number: ', true);
+			Logger::n('Type a number: ', true, false);
 			$input = trim(fgets(STDIN));
 
 			if(isset($possibleFiles[$input])) {
 				// let the user confirm the selection
-				Logger::n('Selected the ' . $type . ' "' . $possibleFiles[$input] . '". Type "y" to continue: ', true);
+				Logger::n('You selected the ' . $type . ' "' . $possibleFiles[$input] . '". Type "y" to continue: ', true, false);
 				$confirm = trim(fgets(STDIN));
 
 				if($confirm == 'y' || $confirm == 'yes') {

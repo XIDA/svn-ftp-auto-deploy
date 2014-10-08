@@ -21,11 +21,11 @@
 
 			foreach($configs as $config) {
 				echo PHP_EOL;
-				Logger::e('--- Deploy - ' . $config->getName() . ' - Start ---');
+				Logger::i('--- Deploy - ' . $config->getName() . ' - Start ---');
 				$this->executeUrls($config->getExecuteBefore());
 				$this->deploy($config, $version);
 				$this->executeUrls($config->getExecuteAfter());
-				Logger::e('--- Deploy - ' . $config->getName() . ' - End -----');
+				Logger::i('--- Deploy - ' . $config->getName() . ' - End -----');
 			}
 		}
 

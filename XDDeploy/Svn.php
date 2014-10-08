@@ -41,7 +41,7 @@
 				$path	 = $this->config->svn->getRoot() . $f;
 
 				$file = $this->getFileNameWithoutSVNUrl($f);
-				Logger::n('exporting ' . $file);
+				Logger::n('exporting ' . $file . ' ', true, true);
 
 				//$file = substr($f, strlen($this->config->svn->getSubfolder()) - 1);
 				//e cho "file: " . $file . PHP_EOL;
@@ -53,7 +53,7 @@
 
 				$cmd = 'svn export ' . $this->loginString . '--force ' . $f . '@' . $targetRev . ' ' . $target;
 				//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;
-
+				Logger::n('done', false, true);
 				exec($cmd);
 			}
 
