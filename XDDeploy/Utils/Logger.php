@@ -53,7 +53,10 @@
 
 		public static function fileLog($text) {
 
-			// let's also save the output to a log file
+			if (!file_exists('logs')) {
+				mkdir('logs');
+			}
+
 			$file = 'logs\log.txt';
 			$current = "";
 			if(file_exists($file)) {
