@@ -1,5 +1,6 @@
 <?php
 	namespace XDDeploy;
+	use XDDeploy\Utils\Logger;
 
 	// System Start Time
 	define('START_TIME', microtime(true));
@@ -40,5 +41,6 @@
 		}
 	}
 
+	Logger::setLogDir(dirname(__FILE__) );
 	new Deploy($config, $version);
 ?>

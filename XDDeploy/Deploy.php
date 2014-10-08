@@ -17,6 +17,7 @@
 		 */
 		public function __construct($name, $version = false) {
 			Logger::n('Welcome to the XIDA SVN-FTP Deploy tool' . PHP_EOL);
+
 			$configs	= Config\Manager::getConfigByName($name);
 
 			foreach($configs as $config) {

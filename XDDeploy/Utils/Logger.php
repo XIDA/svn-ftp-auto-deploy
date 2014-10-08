@@ -9,7 +9,11 @@
 	class Logger {
 
 		public static $LOG_IN_COLOR = false;
+		private static $logDir;
 
+		public static function setLogDir($dir) {
+			Logger::$logDir = $dir;
+		}
 		public static function abort($text = '') {
 			if($text) {
 				self::e('Exit: ' . $text);
@@ -53,11 +57,11 @@
 
 		public static function fileLog($text) {
 
-			if (!file_exists('logs')) {
-				mkdir('logs');
+			if (!file_exists(Logger::$logDir . '\logs')) {
+				mkdir(Logger::$logDir . '\logs');
 			}
 
-			$file = 'logs\log.txt';
+			$file = Logger::$logDir . '\logs\log.txt';
 			$current = "";
 			if(file_exists($file)) {
 				$current = file_get_contents($file);
