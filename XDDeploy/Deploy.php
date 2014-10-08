@@ -21,11 +21,14 @@
 
 			foreach($configs as $config) {
 				echo PHP_EOL;
+				Logger::fileLog('');
 				Logger::i('--- Deploy - ' . $config->getName() . ' - Start ---');
+				Logger::fileLog('Deploy - ' . $config->getName() . ' - Start');
 				$this->executeUrls($config->getExecuteBefore());
 				$this->deploy($config, $version);
 				$this->executeUrls($config->getExecuteAfter());
-				Logger::i('--- Deploy - ' . $config->getName() . ' - End -----');
+				Logger::fileLog('Deploy - ' . $config->getName() . ' - End');
+				Logger::i('--- Deploy - ' . $config->getName() . ' - End ---');
 			}
 		}
 
@@ -59,6 +62,7 @@
 
 			if($ftpVer == "") {
 				Logger::abort('error: could not get version from FTP');
+				Logger::fileLog('error: could not get version from FTP');
 			}
 
 			if($ftpVer  == -1) {
@@ -67,6 +71,7 @@
 				$line = fgets($handle);
 				if(trim($line) != 'y'){
 					Logger::abort("ABORTING!");
+					Logger::fileLog('ABORTING');
 				}
 				echo PHP_EOL;
 				$ftpVer = 0;
@@ -75,13 +80,17 @@
 			if($version) {
 				if($version > $svnLatestVer) {
 					Logger::abort('target revison is greater than latest svn revision ' . $svnLatestVer);
+					Logger::fileLog('target revison is greater than latest svn revision ' . $svnLatestVer);
 				}
 			} else {
 				$version = $svn->getCurrentVersion();
 			}
 
 			Logger::i('ftp version: ' . $ftpVer);
+			Logger::fileLog('ftp version: ' . $ftpVer);
+
 			Logger::i('svn target version: ' . $version);
+			Logger::fileLog('svn target version: ' . $version);
 
 			if ($config->isDebug()) {
 				var_dump($ftpVer, $version, $config);
@@ -102,7 +111,9 @@
 				$ftp->putChanges($changes);
 				Logger::i('done');
 			} else {
+
 				Logger::i('Nothing to do - Up to date');
+				Logger::fileLog('Nothing to do - Up to date');
 			}
 
 			$fs->removeTempFolder();

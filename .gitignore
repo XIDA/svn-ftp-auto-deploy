@@ -3,3 +3,4 @@ preset_*
 deploy.ver
 /nbproject/private/
 configs/project_*
+logs/*
