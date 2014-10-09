@@ -28,6 +28,13 @@ to use config_test.php and update to revision 22
 [https://www.youtube.com/watch?v=ZbSpEUpUnyQ&feature=youtu.be](https://www.youtube.com/watch?v=ZbSpEUpUnyQ&feature=youtu.be "Demo Video")
 
 
+###Support###
+This project was created by XIDA Design & Technik.
+Feel free to contact us if you need a custom version for your specific use case.
+We can then send send you a quote.
+
+[www.xida.de](http://www.xida.de "XIDA Homepage")
+
 
 
 
