@@ -63,9 +63,7 @@
 
 		private function getSourceForFile($change) {
 			$source	 = str_replace($this->config->svn->getRoot() . $this->config->svn->getSubfolder(), "", $change);
-			$source	 = $this->fs->getTempFolder() . str_replace('/', '\\', $source);
-			$source	 = str_replace('\\', '\\\\', $source);
-			return $source;
+			return $this->fs->getTempFolder() . $source;
 		}
 
 		private function getDestinationForFile($change) {
@@ -145,7 +143,7 @@
 
 			foreach ($parts as $part) {
 				//e cho 'part: ' . $part . PHP_EOL;
-				$current .= $part . '/';
+				$current .= $part . DS;
 				// Try to navigate
 				if (@ftp_chdir($conn_id, $current)) {
 					continue;
@@ -178,9 +176,9 @@
 			$targetPath = $directory;
 
 			// deleting only works with absolute urls
-			$strpos = strpos($directory,'/');
+			$strpos = strpos($directory, DS);
 			if (!($strpos !== false && $strpos == 0)) {
-				$targetPath = "/" . $directory;
+				$targetPath = DS . $directory;
 			}
 
 			# here we attempt to delete the file/directory

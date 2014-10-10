@@ -37,15 +37,14 @@
 			Logger::i('exporting files from svn');
 
 			foreach ($changes['files'] as $f) {
-				$cItem	 = array();
-				$path	 = $this->config->svn->getRoot() . $f;
+				//$path	 = $this->config->svn->getRoot() . $f;
 
 				$file = $this->getFileNameWithoutSVNUrl($f);
 				Logger::n('exporting ' . $file . ' ', true, true);
 
 				//$file = substr($f, strlen($this->config->svn->getSubfolder()) - 1);
 				//e cho "file: " . $file . PHP_EOL;
-				$target = $this->fs->getTempFolder() . str_replace('/', '\\', $file);
+				$target = $this->fs->getTempFolder() . $file;
 				//e cho 'target: ' . $target . '<--' . PHP_EOL;
 				//var_dump($target, $file, $f, $path); exit;
 				// Ensure Directory Exists
@@ -149,7 +148,7 @@
 			$files		 = array();
 
 			$repo	 = $this->config->svn->getRoot() . $this->config->svn->getSubfolder();
-			$repo	 = rtrim($repo, "/");
+			$repo	 = rtrim($repo, DS);
 
 			$totLines = count($lines);
 			for ($i = 0; $i < $totLines; $i++) {
@@ -162,7 +161,7 @@
 				$parts	 = explode(" ", $curLine);
 				$sts	 = $parts[0];
 				$file	 = $parts[7];
-				$file	 = rtrim($file, "/");
+				$file	 = rtrim($file, DS);
 
 				//if the file url is the same as the repo url, we remove it
 				if ($file == $repo) {

@@ -34,11 +34,16 @@
 			if(!is_array($data)) {
 				die('Config data invalid!');
 			}
-			$this->data = $data;
+			$this->data		= $data;
 			$this->isPreset = $preset;
 
+			// try to merge the current config/preset with a preset
 			$this->mergeWithPreset();
-			$this->validateConfig();
+
+			// only validate a normal config after the merge
+			if(!$this->isPreset() && $this->validateConfig() === false) {
+				die();
+			}
 
 			return $this;
 		}
@@ -59,7 +64,7 @@
 		 *	Validate all required paramaters
 		 */
 		protected function validateConfig() {
-			//
+			return true;
 		}
 
 		/**

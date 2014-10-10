@@ -1,5 +1,6 @@
 <?php
 	namespace XDDeploy\Config;
+	use XDDeploy\Utils\File;
 
 	/**
 	 *  SVN Configs
@@ -12,7 +13,7 @@
 		 *	Validate all required paramaters
 		 */
 		protected function validateConfig() {
-			//
+			return true;
 		}
 
 		/**
@@ -21,7 +22,7 @@
 		 *	@return string
 		 */
 		public function getRoot() {
-			return $this->getValue('root');
+			return File::getCleanedPath($this->getValue('root') . DS);
 		}
 
 		/**
@@ -30,7 +31,7 @@
 		 *	@return string
 		 */
 		public function getSubfolder() {
-			return $this->getValue('subfolder');
+			return File::getCleanedPath($this->getValue('subfolder') . DS);
 		}
 
 		/**

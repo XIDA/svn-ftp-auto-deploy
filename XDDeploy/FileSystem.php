@@ -32,11 +32,11 @@
 		}
 
 		protected function setupTempFolder() {
-			$tmp	 = $_SERVER['TEMP'];
-			$dirname = $tmp . DIRECTORY_SEPARATOR . uniqid('deploy-');
+			$tmp	 = realpath(getenv('TEMP'));
+			$dirname = $tmp . DS . uniqid('deploy-');
 			mkdir($dirname);
 
-			$this->_temp = $dirname . DIRECTORY_SEPARATOR;
+			$this->_temp = $dirname . DS;
 		}
 
 		public function removeTempFolder() {
@@ -59,7 +59,7 @@
 					if (!is_dir($folder . $file)) {
 						unlink($folder . $file);
 					} else {
-						$this->unlinkDirectory($folder . $file . '/');
+						$this->unlinkDirectory($folder . $file . DS);
 					}
 				}
 			}
@@ -75,10 +75,10 @@
 			$sub	 = str_replace($temp, '', $target);
 			//var_dump($temp, $target, $sub);exit;
 			$file	 = dirname($sub);
-			$parts	 = explode('\\', $file);
+			$parts	 = explode(DS, $file);
 			$folder	 = $temp;
 			foreach ($parts as $part) {
-				$folder .= $part . DIRECTORY_SEPARATOR;
+				$folder .= $part . DS;
 				//e cho 'Make: ' . dirname($target) . '<br />';
 
 				if (!file_exists($folder)) {

@@ -1,6 +1,7 @@
 <?php
 	namespace XDDeploy\Config;
 	use XDDeploy\Utils\Logger;
+	use XDDeploy\Utils\File;
 
 	/**
 	 * 	FTP Configs
@@ -13,13 +14,20 @@
 		 *	Validate all required paramaters
 		 */
 		protected function validateConfig() {
+			$valid = true;
 			if(!$this->getPassword()) {
+				$valid = false;
 				Logger::configError("Property 'ftp->password' is required.");
-			} elseif(!$this->getServer()) {
+			}
+			if(!$this->getServer()) {
+				$valid = false;
 				Logger::configError("Property 'ftp->server' is required.");
-			} elseif(!$this->getUser()) {
+			}
+			if(!$this->getUser()) {
+				$valid = false;
 				Logger::configError("Property 'ftp->user' is required.");
 			}
+			return $valid;
 		}
 
 		/**
@@ -28,7 +36,7 @@
 		 *	@return string
 		 */
 		public function getRoot() {
-			return $this->getValue('root');
+			return File::getCleanedPath(DS . $this->getValue('root') . DS);
 		}
 
 		/**

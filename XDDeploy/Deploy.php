@@ -39,10 +39,10 @@
 		 *	@param	array			$commands
 		 */
 		private function executeUrls($commands) {
-			$urls = filter_var_array($commands, FILTER_SANITIZE_URL);
+			$urls = filter_var_array($commands, FILTER_VALIDATE_URL);
 			foreach($urls as $url) {
 				$result = file_get_contents($url);
-				Logger::n($result);
+				//L ogger::n($result);
 			}
 		}
 

@@ -33,13 +33,15 @@
 			parent::__construct($data, $preset);
 
 			// create a new ftp configuration object, if the key exists
+			// if this is a normal config, a ftp object is required
 			if(!$this->isPreset() || $this->getValue('ftp')) {
-				$this->ftp = new Ftp($this->getValue('ftp'));
+				$this->ftp = new Ftp($this->getValue('ftp'), $preset);
 			}
 
 			// create a new svn configuration object, if the key exists
+			// if this is a normal config, a svn object is required
 			if(!$this->isPreset()  || $this->getValue('svn')) {
-				$this->svn = new Svn($this->getValue('svn'));
+				$this->svn = new Svn($this->getValue('svn'), $preset);
 			}
 
 			return $this;
@@ -49,9 +51,12 @@
 		 *	Validate all required paramaters
 		 */
 		protected function validateConfig() {
+			$valid = true;
 			if(!$this->getName()) {
+				$valid = false;
 				Logger::configError("Property 'name' is required.");
 			}
+			return $valid;
 		}
 
 		/**
