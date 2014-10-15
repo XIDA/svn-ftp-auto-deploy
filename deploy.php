@@ -19,7 +19,7 @@
 	$version = "";
 
 	// checking command line parameters
-	if(sizeOf($options) > 0 && $options['c']) {
+	if(sizeOf($options) > 0 && isset($options['c'])) {
 		$config	 = $options['c'];
 		if(isset($options['v'])) {
 			$version = $options['v'];
