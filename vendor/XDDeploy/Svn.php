@@ -1,6 +1,7 @@
 <?php
 	namespace XDDeploy;
 	use XDUtils\Logger;
+	use XDUtils\File;
 
 	class Svn {
 
@@ -48,7 +49,7 @@
 				//e cho 'target: ' . $target . '<--' . PHP_EOL;
 				//var_dump($target, $file, $f, $path); exit;
 				// Ensure Directory Exists
-				$this->fs->ensureFolderExists($target);
+				File::createDirectoryForFile($target);
 
 				$cmd = 'svn export ' . $this->loginString . '--force ' . $f . '@' . $targetRev . ' ' . $target;
 				//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;

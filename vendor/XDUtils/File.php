@@ -50,6 +50,42 @@
 		}
 
 		/**
+		 *	Removes a directory recursivley
+		 *
+		 *	@param	string			$dirPath
+		 *
+		 *	@return boolean
+		 */
+		public static function removeDirectoryRecursive($dirPath) {
+			if(!file_exists($dirPath)) {
+				return false;
+			}
+			$iterator = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator(
+					$dirPath,
+					\FilesystemIterator::SKIP_DOTS
+				),
+				\RecursiveIteratorIterator::CHILD_FIRST
+			);
+			foreach($iterator as $path) {
+				$path->isDir() ? rmdir($path->getPathname()) : unlink($path->getPathname());
+			}
+			echo "remove " . $dirPath;
+			return rmdir($dirPath);
+		}
+
+		/**
+		 *	Create a directory for a file recursiely
+		 *
+		 *	@param	string			$file
+		 */
+		public static function createDirectoryForFile($file) {
+			if(!file_exists(dirname($file))) {
+				@mkdir(dirname($file), 0777, true);
+			}
+		}
+
+		/**
 		 *	Replace slashes / double slashes with the default separator.
 		 *
 		 *	@param	string			$path

@@ -2,6 +2,7 @@
 	namespace XDDeploy;
 	use XDUtils\Logger;
 	use XDUtils\CLI;
+	use XDUtils\File;
 	use XDTranslations\Translations;
 
 	/**
