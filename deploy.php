@@ -1,26 +1,18 @@
 <?php
-	namespace XDDeploy;
-	use XDDeploy\Utils\Logger;
-
-	// System Start Time
-	define('START_TIME', microtime(true));
-
-	// System Start Memory
-	define('START_MEMORY_USAGE', memory_get_usage());
-
-	// Extension of all PHP files
-	define('EXT', '.php');
-
-	// Directory separator (Unix-Style works on all OS)
-	define('DS', '/');
-
-	// Absolute path to the root folder
-	define('ROOT', realpath(__DIR__) . DS);
+	use XDUtils\Logger;
 
 	error_reporting(E_ALL);
 
-	require(ROOT . 'XDDeploy/Loader.php');
-	new Loader();
+	// Absolute path to the root folder
+	define('ROOT', realpath(__DIR__) . '/');
+
+	require(ROOT . 'vendor/Loader.php');
+	// add non namespaced classes
+	new \Loader(
+		array(
+			'Zebra_Database' => '/stefangabos/zebra_database/Zebra_Database.php',
+		)
+	);
 
 	$options = (getopt("c:v:"));
 	$config	 = "";
@@ -29,7 +21,7 @@
 	// checking command line parameters
 	if(sizeOf($options) > 0 && $options['c']) {
 		$config	 = $options['c'];
-		if($options['v']) {
+		if(isset($options['v'])) {
 			$version = $options['v'];
 		}
 	} else {
@@ -41,6 +33,6 @@
 		}
 	}
 
-	Logger::setLogDir(dirname(__FILE__) );
-	new Deploy($config, $version);
+	Logger::setLogDir(dirname(__FILE__));
+	new \XDDeploy\Deploy($config, $version);
 ?>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<string name="welcome"><![CDATA[Welcome to the XIDA SVN-FTP Deploy tool\n]]></string>
+	
+    <string name="deploy_start"><![CDATA[Deploy - %1$s - Start]]></string>
+	<string name="deploy_end"><![CDATA[Deploy - %1$s - End]]></string>
+</resources>
