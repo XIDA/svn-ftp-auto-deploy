@@ -1,6 +1,7 @@
 <?php
 	namespace XDDeploy;
 	use XDUtils\Logger;
+	use XDUtils\CLI;
 	use XDTranslations\Translations;
 
 	/**
@@ -16,7 +17,8 @@
 		 *	@param	string		$name			Name of the configuration
 		 *	@param	int			$version		Version to deploy
 		 */
-		public function __construct($name, $version = false) {
+		public function __construct($name = null, $version = null) {
+			// setup translations
 			Translations::setPath(dirname(__FILE__) . DS . 'resources');
 
 			Logger::info(Translations::get('welcome'));
@@ -51,40 +53,37 @@
 		 *	@param	Config\Config	$config
 		 *	@param	string			$version	Default: the newest version.
 		 */
-		private function deploy(Config\Config $config, $version = false) {
+		private function deploy(Config\Config $config, $version = null) {
 			$fs		= new FileSystem($config);
 			$svn	= new Svn($fs, $config);
 			$ftp	= new Ftp($fs, $config);
 
+			// get the current active revisions
+			$ftpVer			= $ftp->getCurrentVersion();
+			$svnLatestVer	= $svn->getCurrentVersion();
 
-			$ftpVer = $ftp->getCurrentVersion();
-			$svnLatestVer = $svn->getCurrentVersion();
-
-			if($ftpVer == "") {
-				Logger::fatalError('error: could not get version from FTP');
-			}
-
-			if($ftpVer  == -1) {
-				Logger::warning('No "' . $config->getVersionFile() . '" file found on the ftp, is this your first commit? (type y to continue)');
-				$handle = fopen ("php://stdin","r");
-				$line = fgets($handle);
-				if(trim($line) != 'y'){
+			if(!isset($ftpVer) || $ftpVer === false) {
+				Logger::warning(Translations::get('version_ftp_not_found', array($config->getVersionFile())));
+				if(CLI::userInput(array('y', 'yes', 1)) === false) {
 					Logger::fatalError("ABORTING!");
 				}
-				echo PHP_EOL;
 				$ftpVer = 0;
 			}
 
-			if($version) {
-				if($version > $svnLatestVer) {
-					Logger::fatalError('target revison is greater than latest svn revision ' . $svnLatestVer);
+			if(isset($version)) {
+				Logger::warning(Translations::get('version_input', array($svnLatestVer, $config->getName())));
+
+				// wait for the user to input the version
+				$version	= CLI::userInput(range(1, $svnLatestVer));
+				if($version === false) {
+					Logger::fatalError(Translations::get('version_not_in_range', array($svnLatestVer)));
 				}
 			} else {
 				$version = $svn->getCurrentVersion();
 			}
 
-			Logger::info('ftp version: ' . $ftpVer);
-			Logger::info('svn target version: ' . $version);
+			Logger::info(Translations::get('version_ftp', array($ftpVer)));
+			Logger::info(Translations::get('version_svn', array($version)));
 
 			if ($config->isDebug()) {
 				var_dump($ftpVer, $version, $config);
@@ -92,7 +91,7 @@
 			}
 
 			if ($version != $ftpVer) {
-				Logger::note('collecting changed files..');
+				Logger::notice('collecting changed files..');
 				$changes = $svn->checkoutChanges($version, $ftpVer);
 
 				Logger::warning('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
@@ -109,6 +108,7 @@
 			}
 
 			$fs->removeTempFolder();
+			return true;
 		}
 	}
 ?>

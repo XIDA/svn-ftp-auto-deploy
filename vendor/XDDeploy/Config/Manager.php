@@ -2,6 +2,7 @@
 	namespace XDDeploy\Config;
 	use XDUtils\File;
 	use XDUtils\Logger;
+	use XDTranslations\Translations;
 
 	/**
 	 * 	Manages configs
@@ -109,21 +110,20 @@
 				}
 			}
 
-
 			// if no file is found output possible values to the console
 			$possibleFiles = array_keys($files);
-			Logger::warning('Empty or invalid "' . $type . '" parameter' . PHP_EOL . 'Choose on of the following options:');
+			Logger::warning(Translations::get('config_not_found', array($type)));
 			foreach($possibleFiles as $index => $value) {
-				Logger::info($index . ' - ' . $value, false, false);
+				Logger::info($index . ' - ' . $value);
 			}
 
 			// wait for user input, to select a configuraiton via number
-			Logger::info('Type a number: ', true, false);
+			Logger::info('Type a number: ');
 			$input = trim(fgets(STDIN));
 
 			if(isset($possibleFiles[$input])) {
 				// let the user confirm the selection
-				Logger::warning('You selected the ' . $type . ' "' . $possibleFiles[$input] . '". Type "y" to continue: ', true, false);
+				Logger::warning(Translations::get('config_confirm_selection', array($type, $possibleFiles[$input])));
 				$confirm = trim(fgets(STDIN));
 
 				if($confirm == 'y' || $confirm == 'yes') {
@@ -148,7 +148,7 @@
 			$file			= self::getFileByName($name, self::CONFIG_NAME);
 
 			// load the config file
-			Logger::configInfo('Loading config "' . $file . '" ...');
+			Logger::info(Translations::get('config_loading_file', array($file)));
 			$data			= require_once($file);
 
 			// array for loop is needed
@@ -159,9 +159,11 @@
 			// store all configs in a array
 			$deployConfigs  = array();
 			foreach($data as $config) {
+				if(!is_array($config)) {
+					Logger::fatalError(Translations::get('config_data_invalid', array($file)));
+				}
 				$configObject	 = new Config($config);
 				$deployConfigs[] = $configObject;
-				Logger::configNote('Loaded Config with name ' . $configObject->getName());
 			}
 			return $deployConfigs;
 		}

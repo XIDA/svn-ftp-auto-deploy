@@ -21,7 +21,7 @@
 
 		protected function log($msg) {
 			if ($this->config->isVerbose()) {
-				Logger::note("[FTP] " . $msg);
+				Logger::notice("[FTP] " . $msg);
 			}
 		}
 
@@ -37,24 +37,22 @@
 			$temp = $this->fs->getTempFolder();
 
 			$this->log('Temp is: ' . $temp);
-
 			$this->log('PWD is: ' . ftp_pwd($conn_id));
 
 			$filepath = $this->config->getVersionFile();
 
 			$this->log('Attempt GET: ' . $filepath);
 
-
-			$success = @ftp_get($conn_id, $temp . $this->config->getVersionFile(), $filepath, FTP_BINARY);
+			$success = ftp_get($conn_id, $temp . $filepath, $filepath, FTP_BINARY);
 
 			if (!$success) {
 				$this->log('GET Failed');
-				return "-1";
+				return null;
 			}
 
 			$this->log('GET Success');
 
-			$data = file_get_contents($temp . $this->config->getVersionFile());
+			$data = file_get_contents($temp . $filepath);
 
 			$this->log('FTP Version: ' . $data);
 
@@ -91,7 +89,7 @@
 
 				//e cho 'source: ' . $source . PHP_EOL;
 				if (is_dir($source)) {
-					Logger::note('created directory ' . $destination);
+					Logger::notice('created directory ' . $destination);
 					continue;
 				}
 

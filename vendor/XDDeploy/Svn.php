@@ -40,7 +40,7 @@
 				//$path	 = $this->config->svn->getRoot() . $f;
 
 				$file = $this->getFileNameWithoutSVNUrl($f);
-				Logger::note('exporting ' . $file . '.. ');
+				Logger::notice('exporting ' . $file . '.. ');
 
 				//$file = substr($f, strlen($this->config->svn->getSubfolder()) - 1);
 				//e cho "file: " . $file . PHP_EOL;
@@ -52,7 +52,7 @@
 
 				$cmd = 'svn export ' . $this->loginString . '--force ' . $f . '@' . $targetRev . ' ' . $target;
 				//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;
-				Logger::note('..done');
+				Logger::notice('..done');
 				exec($cmd);
 			}
 
@@ -94,7 +94,7 @@
 			if(!$xml) {
 				Logger::fatalError('SVN ERROR!');
 			}
-			return $xml->entry['revision'];
+			return (int) $xml->entry['revision'];
 		}
 
 		protected function getChangeLog($targetVer, $ftpVersion) {

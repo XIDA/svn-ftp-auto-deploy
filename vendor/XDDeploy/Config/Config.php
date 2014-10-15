@@ -22,6 +22,12 @@
 		public $svn;
 
 		/**
+		 *	Database Configuration
+		 *	@var DB
+		 */
+		public $db;
+
+		/**
 		 *	Single deploy config
 		 *
 		 *	@param	array		$data		Configuration array from file
@@ -33,15 +39,21 @@
 			parent::__construct($data, $preset);
 
 			// create a new ftp configuration object, if the key exists
-			// if this is a normal config, a ftp object is required
+			// if this is a normal config, a ftp config object is required
 			if(!$this->isPreset() || $this->getValue('ftp')) {
 				$this->ftp = new Ftp($this->getValue('ftp'), $preset);
 			}
 
 			// create a new svn configuration object, if the key exists
-			// if this is a normal config, a svn object is required
-			if(!$this->isPreset()  || $this->getValue('svn')) {
+			// if this is a normal config, a svn config object is required
+			if(!$this->isPreset() || $this->getValue('svn')) {
 				$this->svn = new Svn($this->getValue('svn'), $preset);
+			}
+
+			// create a new database configuration object, if the key exists
+			// if this is a normal config, a database config object is required
+			if(!$this->isPreset() && $this->getValue('db')) {
+				$this->db = new DB($this->getValue('db'), $preset);
 			}
 
 			return $this;
@@ -54,7 +66,7 @@
 			$valid = true;
 			if(!$this->getName()) {
 				$valid = false;
-				Logger::configError("Property 'name' is required.");
+				Logger::error("Property 'name' is required.");
 			}
 			return $valid;
 		}
@@ -75,7 +87,7 @@
 		 *	@return string
 		 */
 		public function getVersionFile() {
-			return $this->getValue('version_file') ?: 'deploy.ver';
+			return (string) $this->getValue('version_file') ?: 'deploy.ver';
 		}
 
 		/**

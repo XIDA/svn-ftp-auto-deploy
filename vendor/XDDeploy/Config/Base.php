@@ -32,9 +32,6 @@
 		 *	@return \XDDeploy\Config\Base
 		 */
 		protected function __construct($data, $preset = false) {
-			if(!is_array($data)) {
-				Logger::fatalError('Config data invalid!');
-			}
 			$this->data		= $data;
 			$this->isPreset = $preset;
 
@@ -43,7 +40,7 @@
 
 			// only validate a normal config after the merge
 			if(!$this->isPreset() && $this->validateConfig() === false) {
-				die();
+				Logger::fatalError('');
 			}
 
 			return $this;

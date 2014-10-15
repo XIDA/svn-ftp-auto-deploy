@@ -2,132 +2,195 @@
 	namespace XDUtils;
 
 	/**
-	 *	Description of Logger
+	 *	Manages logs
 	 *
 	 *	@author xida
 	 */
 	class Logger {
 
-		public static $FILE_LOG = true;
-		public static $LOG_IN_COLOR = false;
-		private static $logDir;
+		/**
+		 *	Stores if log to file is enabled
+		 *
+		 *	@var boolean
+		 */
+		private static $logToFile = true;
 
+		/**
+		 *	Stores if logging to command line is enabled
+		 *
+		 *	@var boolean
+		 */
+		private static $logToCli = true;
 
-		private static $TEXT_COLORS = array(
-			'black'         => '0;30',
-			'dark_gray'     => '1;30',
-			'blue'          => '0;34',
-			'light_blue'    => '1;34',
-			'green'         => '0;32',
-			'light_green'   => '1;32',
-			'cyan'          => '0;36',
-			'light_cyan'    => '1;36',
-			'red'           => '0;31',
-			'light_red'     => '1;31',
-			'purple'        => '0;35',
-			'light_purple'  => '1;35',
-			'brown'         => '0;33',
-			'yellow'        => '1;33',
-			'light_gray'    => '0;37',
-			'white'         => '1;37',
-			'black_u'       => '4;30',   // underlined
-			'red_u'         => '4;31',
-			'green_u'       => '4;32',
-			'yellow_u'      => '4;33',
-			'blue_u'        => '4;34',
-			'purple_u'      => '4;35',
-			'cyan_u'        => '4;36',
-			'white_u'       => '4;37'
-		);
+		/**
+		 *	Stores if colorize of logs is enabled
+		 *
+		 *	@var boolean
+		 */
+		private static $logInColors = true;
 
-		private static $BACKGROUND_COLORS = array(
-			'black'         => '40',
-			'red'           => '41',
-			'green'         => '42',
-			'yellow'        => '43',
-			'blue'          => '44',
-			'magenta'       => '45',
-			'cyan'          => '46',
-			'light_gray'    => '47'
-		);
+		/**
+		 *	The log dir path
+		 *
+		 *	@var string
+		 */
+		private static $logFileDir = 'log';
 
-		public static function setLogDir($dir) {
-			Logger::$logDir = $dir;
+		/**
+		 *	The log file name
+		 *
+		 *	@var string
+		 */
+		private static $logFileName = 'log.txt';
+
+		/**
+		 *	Enable/Disable file log
+		 *
+		 *	@param	boolean		$value
+		 */
+		public static function setLogToFile($value) {
+			self::$logToFile = (boolean) $value;
 		}
 
+		/**
+		 *	Enable/Disable log to command line
+		 *
+		 *	@param	boolean		$value
+		 */
+		public static function setLogToCli($value) {
+			self::$logToCli = (boolean) $value;
+		}
+
+
+		/**
+		 *	Enable/Disable colorize of logs on command line
+		 *
+		 *	@param	boolean		$value
+		 */
+		public static function setLogInColors($value) {
+			self::$logInColors = (boolean) $value;
+		}
+
+		/**
+		 *	Set the log file dir
+		 *
+		 *	@param	string		$dir
+		 */
+		public static function setLogFileDir($dir) {
+			Logger::$logFileDir = $dir;
+		}
+
+		/**
+		 *	Set the log file dir
+		 *
+		 *	@param	string		$name
+		 */
+		public static function setLogFileName($name) {
+			if(is_string($name)) {
+				Logger::$logFileName = $name;
+			}
+		}
+
+		/**
+		 *	Logs a fatal error and exit application
+		 *
+		 *	@param	string		$t
+		 */
 		public static function fatalError($t = '') {
 			self::error('Exit' . ($t ? (': ' . $t) : ''));
 			die();
 		}
 
-		public static function configError($error) {
-			self::error('[Config Error] - ' . $error);
-		}
-
-		public static function configNote($note) {
-			self::note('[Config Note] - ' . $note);
-		}
-
-		public static function configInfo($info) {
-			self::info('[Config Info] - ' . $info);
-		}
-
+		/**
+		 *	Logs a error
+		 *
+		 *	@param	string		$t
+		 */
 		public static function error($t = '') {
 			self::l($t, 'red');
 		}
 
+		/**
+		 *	Logs a info
+		 *
+		 *	@param	string		$t
+		 */
 		public static function info($t = '') {
 			self::l($t, 'white');
 		}
 
-		public static function note($t = '') {
+		/**
+		 *	Logs a notice
+		 *
+		 *	@param	string		$t
+		 */
+		public static function notice($t = '') {
 			self::l($t, 'light_gray');
 		}
 
+		/**
+		 *	Logs a success info
+		 *
+		 *	@param	string		$t
+		 */
 		public static function success($t = '') {
 			self::l($t, 'green');
 		}
 
-		public static function warning($t = "") {
+		/**
+		 *	Logs a warning
+		 *
+		 *	@param	string		$t
+		 */
+		public static function warning($t = '') {
 			self::l($t, 'yellow');
 		}
 
-		private static function l($text = "", $color = 'white', $timeStamp = true) {
-			self::fileLog($text);
-			echo ($timeStamp ? date('H:i:s') . ' - ' : '') . self::getColoredString($text, $color) . PHP_EOL;
+		/**
+		 *	Logs text
+		 *
+		 *	@param	string		$text			Text to log
+		 *	@param	string		$color			Colorize log on cli
+		 *	@param	string		$timeStamp		Display timestamp in log
+		 */
+		private static function l($text = '', $color = 'white', $timeStamp = true) {
+			if(self::$logToFile) {
+				self::fileLog($text);
+			}
+
+			if(self::$logToCli) {
+				$log = '';
+				if($timeStamp) {
+					$log .= date('H:i:s') . ' - ';
+				}
+				if(self::$logInColors) {
+					$log .= CLI::getColoredString($text, $color);
+				} else {
+					$log .= $text;
+				}
+				echo $log . PHP_EOL;
+			}
 		}
 
+		/**
+		 *	Logs to file
+		 *
+		 *	@param	string		$text
+		 */
 		public static function fileLog($text) {
-			if (!file_exists(Logger::$logDir . '\logs')) {
-				@mkdir(Logger::$logDir . '\logs', 0777, true);
+			// creat dir if not exists
+			if (!file_exists(Logger::$logFileDir)) {
+				@mkdir(Logger::$logFileDir, 0777, true);
 			}
-			echo 'hi';
-			$file = Logger::$logDir . '\logs\log.txt';
+
+			// build filename
+			$file = File::getCleanedPath(Logger::$logFileDir . DS . self::$logFileName);
+
+			// add timestamp
 			$text = date('d.m.Y H:i:s') . " - " . $text . PHP_EOL;
+
+			// save log to file
 			file_put_contents($file, $text, FILE_APPEND);
-		}
-
-
-		private static function getColoredString($string, $foreground_color = null, $background_color = null) {
-			if (!self::$LOG_IN_COLOR) {
-				return $string;
-			}
-
-			$colored_string = "";
-
-			// Check if given foreground color found
-			if (isset(self::$TEXT_COLORS[$foreground_color])) {
-				$colored_string .= "\033[" . self::$TEXT_COLORS[$foreground_color] . "m";
-			}
-			// Check if given background color found
-			if (isset(self::$BACKGROUND_COLORS[$background_color])) {
-				$colored_string .= "\033[" . self::$BACKGROUND_COLORS[$background_color] . "m";
-			}
-
-			// Add string and end coloring
-			$colored_string .=  $string . "\033[0m";
-
-			return $colored_string;
 		}
 	}
 ?>

@@ -14,9 +14,9 @@
 		)
 	);
 
-	$options = (getopt("c:v:"));
-	$config	 = "";
-	$version = "";
+	$options = (getopt("c::v::"));
+	$config	 = null;
+	$version = null;
 
 	// checking command line parameters
 	if(sizeOf($options) > 0 && isset($options['c'])) {
@@ -33,6 +33,8 @@
 		}
 	}
 
-	Logger::setLogDir(dirname(__FILE__));
+	Logger::setLogFileDir(ROOT . 'log');
+	Logger::setLogInColors(true);
+	var_dump($version);
 	new \XDDeploy\Deploy($config, $version);
 ?>

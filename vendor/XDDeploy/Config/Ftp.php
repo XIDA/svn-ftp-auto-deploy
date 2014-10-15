@@ -17,15 +17,15 @@
 			$valid = true;
 			if(!$this->getPassword()) {
 				$valid = false;
-				Logger::configError("Property 'ftp->password' is required.");
+				Logger::error("Property 'ftp->password' is required.");
 			}
 			if(!$this->getServer()) {
 				$valid = false;
-				Logger::configError("Property 'ftp->server' is required.");
+				Logger::error("Property 'ftp->server' is required.");
 			}
 			if(!$this->getUser()) {
 				$valid = false;
-				Logger::configError("Property 'ftp->user' is required.");
+				Logger::error("Property 'ftp->user' is required.");
 			}
 			return $valid;
 		}
