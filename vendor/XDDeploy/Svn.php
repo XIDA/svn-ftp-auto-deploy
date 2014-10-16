@@ -27,7 +27,12 @@
 		}
 
 		private function getFileNameWithoutSVNUrl($fileUrl) {
-			return str_replace($this->config->svn->getRoot() . $this->config->svn->getSubfolder(), "", $fileUrl);
+
+			// although each of this variables is cleaned by itself already
+			// we need to clean the combination of the 2 again because if the subfolder is empty in the config
+			// then this will result in 2 slashes
+			$cleanedPath = File::getCleanedPath($this->config->svn->getRoot() . $this->config->svn->getSubfolder());
+			return str_replace($cleanedPath, "", $fileUrl);
 		}
 
 		public function checkoutChanges($targetRev, $rVer) {
@@ -42,7 +47,6 @@
 
 				$file = $this->getFileNameWithoutSVNUrl($f);
 				Logger::notice('exporting ' . $file . '.. ');
-
 				//$file = substr($f, strlen($this->config->svn->getSubfolder()) - 1);
 				//e cho "file: " . $file . PHP_EOL;
 				$target = $this->fs->getTempFolder() . $file;

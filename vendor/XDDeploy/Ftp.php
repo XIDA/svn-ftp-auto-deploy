@@ -1,6 +1,7 @@
 <?php
 	namespace XDDeploy;
 	use XDUtils\Logger;
+	use XDUtils\File;
 
 	class Ftp {
 
@@ -60,12 +61,14 @@
 		}
 
 		private function getSourceForFile($change) {
-			$source	 = str_replace($this->config->svn->getRoot() . $this->config->svn->getSubfolder(), "", $change);
+			$cleanedPath = File::getCleanedPath($this->config->svn->getRoot() . $this->config->svn->getSubfolder());
+			$source	 = str_replace($cleanedPath, "", $change);
 			return $this->fs->getTempFolder() . $source;
 		}
 
 		private function getDestinationForFile($change) {
-			return $this->config->ftp->getRoot() . str_replace($this->config->svn->getRoot() . $this->config->svn->getSubfolder(), "", $change);
+			$cleanedPath = File::getCleanedPath($this->config->svn->getRoot() . $this->config->svn->getSubfolder());
+			return $this->config->ftp->getRoot() . str_replace($cleanedPath, "", $change);
 		}
 
 		public function putChanges($changes) {
@@ -79,7 +82,7 @@
 				//e cho 'source: ' . $source . PHP_EOL;
 				// The ftp destination directory.
 				$destination = $this->getDestinationForFile($change);
-				//e cho 'destination: ' . $destination . PHP_EOL;
+				echo 'destination: ' . $destination . PHP_EOL;
 
 				if (is_dir($source)) {
 					$this->ftpGoDir($conn_id, $destination);
