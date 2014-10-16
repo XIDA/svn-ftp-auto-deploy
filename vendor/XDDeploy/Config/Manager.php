@@ -145,8 +145,12 @@
 			$file			= self::getFileByName($name, self::CONFIG_NAME);
 
 			// load the config file
-			Logger::info(Translations::get('config_loading_file', array($file)));
-			$data			= require_once($file);
+
+			// remove the directory for the file that is shown in the log
+			$configName = str_replace(ROOT . "configs" . DIRECTORY_SEPARATOR, "", $file);
+
+			Logger::info(Translations::get('config_loading_file', array($configName)));
+			$data = require_once($file);
 
 			// array for loop is needed
 			if(!isset($data[0]) || !is_array($data[0])) {
@@ -157,7 +161,7 @@
 			$deployConfigs  = array();
 			foreach($data as $config) {
 				if(!is_array($config)) {
-					Logger::fatalError(Translations::get('config_data_invalid', array($file)));
+					Logger::fatalError(Translations::get('config_data_invalid', array($configName)));
 				}
 				$configObject	 = new Config($config);
 				$deployConfigs[] = $configObject;
