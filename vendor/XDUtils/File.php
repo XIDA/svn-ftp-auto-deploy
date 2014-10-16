@@ -70,7 +70,6 @@
 			foreach($iterator as $path) {
 				$path->isDir() ? rmdir($path->getPathname()) : unlink($path->getPathname());
 			}
-			echo "remove " . $dirPath;
 			return rmdir($dirPath);
 		}
 

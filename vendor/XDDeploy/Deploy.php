@@ -108,6 +108,65 @@
 				Logger::success('Nothing to do - Up to date');
 			}
 
+			// db deploy
+			if(isset($config->db)) {
+				$db = new \Zebra_Database();
+				$db->connect(
+					$config->db->getServer(),
+					$config->db->getUser(),
+					$config->db->getPassword(),
+					$config->db->getName()
+				);
+
+				$db->set_charset();
+
+
+				// backup
+				/*
+				$tables = $db->get_tables();
+
+				$sql = '';
+
+				//cycle through
+				foreach($tables as $table) {
+					$sql .= 'DROP TABLE IF EXISTS ' . $table . ';';
+
+					$db->query('SHOW CREATE TABLE `' . $table . '`');
+					$result = $db->fetch_assoc_all();
+
+					$sql .= PHP_EOL . PHP_EOL . $result[0]['Create Table'] . ';' . PHP_EOL . PHP_EOL;
+
+					$db->select('*', $table);
+					$rows = $db->fetch_assoc_all();
+
+					$sql .= 'INSERT INTO `' . $table . '` VALUES' . PHP_EOL;
+
+					$rowCount = count($rows);
+					$i = 0;
+					foreach($rows as $row) {
+						$valueCount = count($row);
+						$j = 0;
+						$sql .= '(';
+						foreach($row as $value) {
+							$sql .= "'" . $db->escape($value) . "'";
+							if (++$j !== $valueCount) {
+								$sql .= ',';
+							}
+						}
+						$sql .= ((++$i === $rowCount) ? ');' : '),') . PHP_EOL;
+					}
+					$sql.= PHP_EOL . PHP_EOL;
+				}
+
+				//save file
+				$file = ROOT . DS . 'dbbackup' . DS . 'db-backup-' . time() . '-' . (md5(implode(',', $tables))).'.sql';
+				File::createDirectoryForFile($file);
+				file_put_contents($file, $sql);
+				*/
+				//$cmd = 'svn export file:///var/svn/repos dbchanges';
+				//exec($cmd);
+			}
+
 			$fs->removeTempFolder();
 			return true;
 		}

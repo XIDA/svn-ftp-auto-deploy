@@ -7,7 +7,7 @@
 	
 	<string name="version_ftp_not_found"><![CDATA[No '%1$s' file found on the ftp, is this your first commit? Type "y" to continue]]></string>
 	
-	<string name="version_input"><![CDATA[Please type a version number between 1 and %1$u for config '%2$s':]]></string>
+	<string name="version_input"><![CDATA[Please type a version number from 1 to %1$u for config '%2$s':]]></string>
 	<string name="version_not_in_range"><![CDATA[Target revision is not in range from 1 to %1$s]]></string>
 	
 	<string name="version_ftp"><![CDATA[FTP revision: %1$u]]></string>
@@ -15,8 +15,8 @@
 	
 	<string name="config_ftp_valid_"><![CDATA[[Config] Invalid! See Errors.]]></string>
 	
-	<string name="config_not_found"><![CDATA[[Config] Empty or invalid '%1$s' parameter. Choose on of the following:]]></string>
-	
+	<string name="config_not_found"><![CDATA[[Config] Empty or invalid '%1$s' parameter.]]></string>
+	<string name="config_choose_number"><![CDATA[[Config] Select a number from 0 to %1$u:]]></string>
 	
 	<string name="config_confirm_selection"><![CDATA[[Config] You selected the %1$s '%2$s'. Type 'y' to continue: ]]></string>
 	

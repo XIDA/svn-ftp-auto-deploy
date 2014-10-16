@@ -1,6 +1,7 @@
 <?php
 	namespace XDDeploy\Config;
 	use XDUtils\File;
+	use XDUtils\CLI;
 	use XDUtils\Logger;
 	use XDTranslations\Translations;
 
@@ -116,21 +117,17 @@
 			foreach($possibleFiles as $index => $value) {
 				Logger::info($index . ' - ' . $value);
 			}
-
+			Logger::info(Translations::get('config_choose_number', array(sizeOf($possibleFiles) - 1)));
 			// wait for user input, to select a configuraiton via number
-			Logger::info('Type a number: ');
-			$input = trim(fgets(STDIN));
+			$input = CLI::userInput(range(0, sizeOf($possibleFiles) - 1));
 
-			if(isset($possibleFiles[$input])) {
+			if($input !== false && isset($possibleFiles[$input])) {
 				// let the user confirm the selection
 				Logger::warning(Translations::get('config_confirm_selection', array($type, $possibleFiles[$input])));
-				$confirm = trim(fgets(STDIN));
-
-				if($confirm == 'y' || $confirm == 'yes') {
-					return $files[$possibleFiles[$input]];
-				} else {
+				if(CLI::userInput(array('y', 'yes', 1)) === false) {
 					Logger::fatalError();
 				}
+				return $files[$possibleFiles[$input]];
 			}
 			Logger::fatalError('You entered a invalid number for a ' . $type . '!');
 		}
