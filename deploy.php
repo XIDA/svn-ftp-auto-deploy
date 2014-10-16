@@ -35,6 +35,5 @@
 
 	Logger::setLogFileDir(ROOT . 'log');
 	Logger::setLogInColors(true);
-	var_dump($version);
 	new \XDDeploy\Deploy($config, $version);
 ?>
