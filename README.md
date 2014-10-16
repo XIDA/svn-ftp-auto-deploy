@@ -19,6 +19,12 @@ The purpose of this project is to make a one-click deploy after making an SVN co
 [https://www.youtube.com/watch?v=ZbSpEUpUnyQ&feature=youtu.be](https://www.youtube.com/watch?v=ZbSpEUpUnyQ&feature=youtu.be "Demo Video")
 
 
+###Updates###
+
+**16th October 2014**
+- added option to version databases too
+- database backup before updating
+
 ###Support###
 This project was created by XIDA Design & Technik.
 Feel free to contact us if you need a custom version for your specific use case.
