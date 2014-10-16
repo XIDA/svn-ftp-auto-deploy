@@ -44,7 +44,9 @@
 
 			$this->log('Attempt GET: ' . $filepath);
 
-			$success = ftp_get($conn_id, $temp . $filepath, $filepath, FTP_BINARY);
+			// we need to suppress the warning that the file was not found
+			// because it will otherwise show an error with the deploy.ver was not found
+			$success = @ftp_get($conn_id, $temp . $filepath, $filepath, FTP_BINARY);
 
 			if (!$success) {
 				$this->log('GET Failed');
