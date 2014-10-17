@@ -25,7 +25,7 @@
 
 			// check config file
 			$configs	= Config\Manager::getConfigByName($name);
-			echo Config\Manager::getLastConfigName();
+
 			// setup log file name for deploy
 			Logger::setLogFileName(date('Ymd') . '_' . Config\Manager::getLastConfigName() . '.txt');
 
