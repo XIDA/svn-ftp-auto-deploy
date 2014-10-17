@@ -135,37 +135,51 @@
 			}
 
 			// db deploy
+			// @todo build a own class for db deploy related functions
 			if(isset($config->db)) {
-				$folder			= $svn->checkout($config->db->getRevisionFolder());
-				$revisionFiles	= File::getDirectoryList($folder . DS);
+				$folder	= $svn->checkout($config->db->getRevisionFolder());
+				$files	= File::getDirectoryList($folder . DS);
 
-				/*
-				foreach($revisionFiles as $file) {
-					echo basename($file);
+				$revisionFiles = array();
+				foreach($files as $file) {
+					// check if the file contains a revision
+					preg_match('/r([\d,-]+)/', basename($file), $matches);
+					if(isset($matches[1])				// file is valid if
+						&& is_numeric($matches[1])		// contains a number
+						&& $matches[1] > $versionFrom	// the number is greater than the current revision
+						&& $matches[1] <= $versionTo	// and the number is smaller than the target revision
+					) {
+						$revisionFiles[] = $file;
+					}
 				}
+				// there are sql files to deploy
+				// so connect to database and do a backup
+				if(sizeOf($revisionFiles) > 0) {
+					// connect to db
+					$db = new \XDUtils\Database();
+					$db->connect(
+						$config->db->getServer(),
+						$config->db->getUser(),
+						$config->db->getPassword(),
+						$config->db->getName()
+					);
+					$db->set_charset();
 
-				// connect to db
-				$db = new \XDUtils\Database();
-				$db->connect(
-					$config->db->getServer(),
-					$config->db->getUser(),
-					$config->db->getPassword(),
-					$config->db->getName()
-				);
-				$db->set_charset();
+					// backup current database
+					Logger::info('[DB] Start Backup');
+					$db->backupDatabase(ROOT . DS . 'dbbackup' . DS . 'backup-' . $config->db->getName() . '-' . time() . '.sql');
+					Logger::success('[DB] Backup done');
 
-				// backup current database
-				Logger::info('[DB] Start Backup');
-				$db->backupDatabase(ROOT . DS . 'dbbackup' . DS . 'backup-' . $config->db->getName() . '-' . time() . '.sql');
-				Logger::success('[DB] Backup done');
-
-				// deploy new revisions to db
-
-
-				*/
-
+					// deploy new revisions to db
+					foreach($revisionFiles as $sqlFile) {
+						Logger::info('[DB] Deploy revision file: ' . $sqlFile);
+						$db->parse_file($sqlFile);
+						Logger::success('[DB] Deploy done');
+					}
+				}
 			}
 
+			// remove the temp folder
 			$fs->removeTempFolder();
 			return true;
 		}
