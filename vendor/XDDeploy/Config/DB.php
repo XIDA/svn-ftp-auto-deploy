@@ -68,5 +68,14 @@
 		public function getServer() {
 			return $this->getValue('server');
 		}
+
+		/**
+		 *	Folder name containing the .sql revision files
+		 *
+		 *	@return string
+		 */
+		public function getRevisionFolder() {
+			return (string) $this->getValue('revision_folder') ?: 'dbrevisions';
+		}
 	}
 ?>
