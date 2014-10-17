@@ -61,7 +61,6 @@
 			self::$logToCli = (boolean) $value;
 		}
 
-
 		/**
 		 *	Enable/Disable colorize of logs on command line
 		 *
@@ -91,6 +90,8 @@
 			}
 		}
 
+		
+
 		/**
 		 *	Logs a fatal error and exit application
 		 *
@@ -107,7 +108,16 @@
 		 *	@param	string		$t
 		 */
 		public static function error($t = '') {
-			self::l($t, 'red');
+			self::important($t, 'red');
+		}
+
+		/**
+		 *	Logs a warning
+		 *
+		 *	@param	string		$t
+		 */
+		public static function warning($t = '') {
+			self::important($t, 'yellow');
 		}
 
 		/**
@@ -116,7 +126,7 @@
 		 *	@param	string		$t
 		 */
 		public static function info($t = '') {
-			self::l($t, 'white');
+			self::important($t, 'white');
 		}
 
 		/**
@@ -129,6 +139,17 @@
 		}
 
 		/**
+		 *	Logs a debug message
+		 *
+		 *	@param	string		$t
+		 */
+		public static function debug($t = '') {
+			self::l('[DEBUG] ' . $t, 'light_gray');
+		}
+
+
+
+		/**
 		 *	Logs a success info
 		 *
 		 *	@param	string		$t
@@ -138,12 +159,21 @@
 		}
 
 		/**
-		 *	Logs a warning
+		 *	Displays a user input message
 		 *
 		 *	@param	string		$t
 		 */
-		public static function warning($t = '') {
-			self::l($t, 'yellow');
+		public static function userInput($t = '', $color = 'cyan') {
+			self::l($t, $color);
+		}
+
+		/**
+		 *	Logs a important message
+		 *
+		 *	@param	string		$t
+		 */
+		public static function important($t = '', $color = 'white') {
+			self::l($t, $color, true);
 		}
 
 		/**
@@ -151,10 +181,11 @@
 		 *
 		 *	@param	string		$text			Text to log
 		 *	@param	string		$color			Colorize log on cli
+		 *	@param	boolean		$fileLog		Log the message to file too
 		 *	@param	string		$timeStamp		Display timestamp in log
 		 */
-		private static function l($text = '', $color = 'white', $timeStamp = true) {
-			if(self::$logToFile) {
+		private static function l($text = '', $color = 'white', $fileLog = false, $timeStamp = true) {
+			if(self::$logToFile && $fileLog) {
 				self::fileLog($text);
 			}
 
@@ -179,15 +210,15 @@
 		 */
 		public static function fileLog($text) {
 			// creat dir if not exists
-			if (!file_exists(Logger::$logFileDir)) {
-				@mkdir(Logger::$logFileDir, 0777, true);
+			if (!file_exists(self::$logFileDir)) {
+				@mkdir(self::$logFileDir, 0777, true);
 			}
 
 			// build filename
-			$file = File::getCleanedPath(Logger::$logFileDir . DS . self::$logFileName);
+			$file = File::getCleanedPath(self::$logFileDir . DS . self::$logFileName);
 
 			// add timestamp
-			$text = date('d.m.Y H:i:s') . " - " . $text . PHP_EOL;
+			$text = date('H:i:s') . " " . $text . PHP_EOL;
 
 			// save log to file
 			file_put_contents($file, $text, FILE_APPEND);

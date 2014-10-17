@@ -35,7 +35,7 @@
 		}
 
 		public function checkout($path) {
-			Logger::notice('[SVN] export path: ' . $path);
+			Logger::debug('[SVN] export path: ' . $path);
 			$cmd = 'svn export ' . $this->loginString . '--force ' . $this->getRepositoryUrl() . $path . ' ' . $this->fs->getTempFolder() . $path;
 			exec($cmd);
 			return $this->fs->getTempFolder() . $path;
@@ -46,7 +46,7 @@
 			//e cho '...' . PHP_EOL;
 			//v ar_dump($changes);
 
-			Logger::info('[SVN] exporting files');
+			Logger::debug('[SVN] exporting files');
 
 			foreach ($changes['changed'] as $file) {
 				//$path	 = $this->config->svn->getRoot() . $f;
@@ -58,7 +58,7 @@
 				$cmd = 'svn export ' . $this->loginString . '--force ' . $file['svnPath'] . '@' . $targetRev . ' ' . $file['tempPath'];
 				//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;
 				exec($cmd);
-				Logger::notice('[SVN] exporting ' . $this->getPathWithoutSVNUrl($file['path']) . ' done');
+				Logger::success('[SVN] exporting ' . $file['path'] . ' done');
 			}
 
 			// MM: svn version file will be added later in Deploy.php
@@ -110,7 +110,7 @@
 			//p rint_r($result);
 			$xml		= new \SimpleXMLElement($result, LIBXML_NOERROR + LIBXML_ERR_FATAL + LIBXML_ERR_NONE);
 			if(!$xml) {
-				Logger::fatalError('SVN ERROR! Command: ' . $cmd);
+				Logger::fatalError('[SVN] ERROR! Command: ' . $cmd);
 			}
 			return $xml;
 		}

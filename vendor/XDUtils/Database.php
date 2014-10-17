@@ -105,7 +105,7 @@
 			$i = 0;
 			foreach($tables as $table) {
 				$i++;
-				Logger::info('Backup table ' . $i . '/' . count($tables) . ' ('. $table . ')');
+				Logger::debug('[DB] Backup table ' . $i . '/' . count($tables) . ' ('. $table . ')');
 				$sql .= $this->getFullSqlForTable($table);
 			}
 			File::saveStringToFile($sql, $file);

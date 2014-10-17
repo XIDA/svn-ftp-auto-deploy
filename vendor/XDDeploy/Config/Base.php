@@ -1,6 +1,7 @@
 <?php
 	namespace XDDeploy\Config;
 	use XDUtils\Logger;
+	use XDTranslations\Translations;
 
 	/**
 	 * 	Base config object
@@ -40,9 +41,8 @@
 
 			// only validate a normal config after the merge
 			if(!$this->isPreset() && $this->validateConfig() === false) {
-				Logger::fatalError('');
+				Logger::fatalError(Translations::get('config_invalid'));
 			}
-
 			return $this;
 		}
 

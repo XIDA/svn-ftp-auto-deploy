@@ -21,17 +21,20 @@
 		public function __construct($name = null, $version = null) {
 			// setup translations
 			Translations::setPath(dirname(__FILE__) . DS . 'resources');
+			Logger::notice(Translations::get('welcome'));
 
-			Logger::info(Translations::get('welcome'));
-
+			// check config file
 			$configs	= Config\Manager::getConfigByName($name);
+			echo Config\Manager::getLastConfigName();
+			// setup log file name for deploy
+			Logger::setLogFileName(date('Ymd') . '_' . Config\Manager::getLastConfigName() . '.txt');
 
 			foreach($configs as $config) {
 				Logger::info(Translations::get('deploy_start', array($config->getName())));
 				$this->executeUrls($config->getExecuteBefore());
 				$this->deploy($config, $version);
 				$this->executeUrls($config->getExecuteAfter());
-				Logger::info(Translations::get('deploy_end', array($config->getName())));
+				Logger::info(Translations::get('deploy_end', array($config->getName())) . PHP_EOL . PHP_EOL);
 			}
 		}
 
@@ -110,7 +113,7 @@
 			Logger::info(Translations::get('version_svn', array($versionTo)));
 
 			if ($versionTo != $versionFrom) {
-				Logger::notice('collecting changed files..');
+				Logger::debug('collecting changed files..');
 				$files = $svn->checkoutChanges($versionTo, $versionFrom);
 
 				Logger::warning('found ' . (count($files['changed'])) . ' files / directories that changed and ' . (count($files['deleted'])) . ' files to delete');
@@ -129,7 +132,7 @@
 				);
 
 				$ftp->putChanges($files);
-				Logger::success('done');
+				Logger::success('Deploy done');
 			} else {
 				Logger::success('Nothing to do - Up to date');
 			}
@@ -166,7 +169,7 @@
 					$db->set_charset();
 
 					// backup current database
-					Logger::info('[DB] Start Backup');
+					Logger::notice('[DB] Start Backup');
 					$db->backupDatabase(ROOT . DS . 'dbbackup' . DS . 'backup-' . $config->db->getName() . '-' . time() . '.sql');
 					Logger::success('[DB] Backup done');
 

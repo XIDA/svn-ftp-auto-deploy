@@ -21,7 +21,7 @@
 
 		protected function log($msg) {
 			if ($this->config->isVerbose()) {
-				Logger::notice("[FTP] " . $msg);
+				Logger::debug("[FTP] " . $msg);
 			}
 		}
 
@@ -107,7 +107,7 @@
 						continue;
 					} else {
 						//e cho "Uploaded $source to $destination <br />";
-						Logger::success('[FTP] done', false, true);
+						Logger::success('[FTP] upload done', false, true);
 						break;
 					}
 				}
@@ -242,8 +242,7 @@
 		}
 
 		private function connectionFailed() {
-			Logger::error('FTP connection has failed!');
-			Logger::error('Attempted to connect to ' . $this->config->ftp->getServer() . ' for user ' . $this->config->ftp->getUser());
+			Logger::fatalError('FTP connection has failed!' . PHP_EOL . 'Attempted to connect to ' . $this->config->ftp->getServer() . ' for user ' . $this->config->ftp->getUser());
 			die();
 		}
 

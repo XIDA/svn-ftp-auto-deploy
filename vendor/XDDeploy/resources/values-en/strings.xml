@@ -13,13 +13,14 @@
 	<string name="version_ftp"><![CDATA[FTP revision: %1$u]]></string>
 	<string name="version_svn"><![CDATA[SVN target revision: %1$u]]></string>
 	
-	<string name="config_ftp_valid_"><![CDATA[[Config] Invalid! See Errors.]]></string>
+	<string name="convig_invalid"><![CDATA[[Config] Invalid! See Errors.]]></string>
 	
 	<string name="config_not_found"><![CDATA[[Config] Empty or invalid '%1$s' parameter.]]></string>
 	<string name="config_choose_number"><![CDATA[[Config] Select a number from 0 to %1$u:]]></string>
-	
+	<string name="config_number_invalid"><![CDATA[[Config] You entered a invalid value '%1$s']]></string>
+	<string name="config_no_file_found_for_type"><![CDATA[[Config] No %1$s file found for '%2$s']]></string>
 	<string name="config_confirm_selection"><![CDATA[[Config] You selected the %1$s '%2$s'. Type 'y' to continue: ]]></string>
-	
+	<string name="config_no_file_found"><![CDATA[[Config] No config file found in '%1$s']]></string>
 	<string name="config_loading_file"><![CDATA[[Config] Loading config file: '%1$s']]></string>
 	<string name="config_data_invalid"><![CDATA[[Config] Data invalid for: '%1$s']]></string>
 	<string name="config_invalid"><![CDATA[[Config] Invalid! See Errors.]]></string>

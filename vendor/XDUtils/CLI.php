@@ -42,6 +42,7 @@
 
 		/**
 		 *	Possible command line text background colors
+		 * 
 		 *	@var array
 		 */
 		private static $BACKGROUND_COLORS = array(
