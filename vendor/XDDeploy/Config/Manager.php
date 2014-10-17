@@ -63,6 +63,12 @@
 		 */
 		private static $presetFiles;
 
+		/**
+		 *	Stores current config name
+		 *
+		 *	@var string
+		 */
+		private static $configName = '';
 
 		/**
 		 *	Getter for self::$configFiles
@@ -107,31 +113,66 @@
 			// search for the config name
 			foreach($files as $fileObject) {
 				if($fileObject->getBasename() == $file) {
+					// save the name if this is a config
+					if($type == self::CONFIG_NAME) {
+						self::$configName = $name;
+					}
 					return $fileObject->getPathname();
 				}
 			}
 
+			// no file is found, so let the user choose the config
+			// if there are valid config/preset files
+			if(empty($files)) {
+				Logger::fatalError(Translations::get('config_no_file_found_for_type', array($type, $name)));
+			}
+			return self::getFileNameFromInput($files, $type);
+		}
+
+		/**
+		 *	Get a config file name from user input
+		 *
+		 *	@param	array		$files		Possible files
+		 *	@param	string		$type		PRESET_NAME or CONFIG_NAME
+		 *
+		 *	@return string
+		 */
+		private static function getFileNameFromInput($files, $type) {
 			// if no file is found output possible values to the console
 			$possibleFiles = array_keys($files);
-			Logger::warning(Translations::get('config_not_found', array($type)));
+			Logger::userInput(Translations::get('config_not_found', array($type)));
 			foreach($possibleFiles as $index => $value) {
-				Logger::info($index . ' - ' . $value);
+				Logger::userInput($index . ' - ' . $value);
 			}
-			Logger::info(Translations::get('config_choose_number', array(sizeOf($possibleFiles) - 1)));
-			// wait for user input, to select a configuraiton via number
+
+			Logger::userInput(Translations::get('config_choose_number', array(sizeOf($possibleFiles) - 1)));
+			// wait for the user to select a configuraiton via number
 			$input = CLI::userInput(range(0, sizeOf($possibleFiles) - 1));
 
+			// if the choosen file exists
 			if($input !== false && isset($possibleFiles[$input])) {
 				// let the user confirm the selection
-				Logger::warning(Translations::get('config_confirm_selection', array($type, $possibleFiles[$input])));
+				Logger::userInput(Translations::get('config_confirm_selection', array($type, $possibleFiles[$input])));
 				if(CLI::userInput(array('y', 'yes', 1)) === false) {
 					Logger::fatalError();
 				}
+				// save the name if this is a config
+				if($type == self::CONFIG_NAME) {
+					self::$configName = $possibleFiles[$input];
+				}
 				return $files[$possibleFiles[$input]];
 			}
-			Logger::fatalError('You entered a invalid number for a ' . $type . '!');
+			Logger::fatalError(Translations::get('config_number_invalid', array($input)));
 		}
 
+		/**
+		 *	Get the last handled config name
+		 *
+		 *	@return string
+		 */
+		public static function getLastConfigName() {
+			return self::$configName;
+		}
 
 		/**
 		 *	Searches for a config file and creates a new Config object
@@ -142,15 +183,14 @@
 		 */
 		public static function getConfigByName($name) {
 			// search for the filename in the config files
-			$file			= self::getFileByName($name, self::CONFIG_NAME);
-
-			// load the config file
+			$file		= self::getFileByName($name, self::CONFIG_NAME);
 
 			// remove the directory for the file that is shown in the log
-			$configName = str_replace(ROOT . "configs" . DIRECTORY_SEPARATOR, "", $file);
+			$configName = str_replace(ROOT . self::DIRNAME . DS, "", $file);
+			Logger::debug(Translations::get('config_loading_file', array($configName)));
 
-			Logger::info(Translations::get('config_loading_file', array($configName)));
-			$data = require_once($file);
+			// load the config file
+			$data		= require_once($file);
 
 			// array for loop is needed
 			if(!isset($data[0]) || !is_array($data[0])) {
@@ -163,8 +203,8 @@
 				if(!is_array($config)) {
 					Logger::fatalError(Translations::get('config_data_invalid', array($configName)));
 				}
-				$configObject	 = new Config($config);
-				$deployConfigs[] = $configObject;
+				$configObject		= new Config($config);
+				$deployConfigs[]	= $configObject;
 			}
 			return $deployConfigs;
 		}
@@ -196,6 +236,10 @@
 
 			// get all files from config dir
 			self::$files = File::getFilesRecursive(ROOT . self::DIRNAME);
+			// check if there are files
+			if(self::$files === false) {
+				Logger::fatalError(Translations::get('config_no_file_found', array(ROOT . self::DIRNAME)));
+			}
 
 			foreach(self::$files as $filename => $fileObject) {
 				// only files with allowed extension
@@ -212,6 +256,10 @@
 					$name = str_replace(self::PRESET_NAME . self::NAME_SEPARATOR, '', $fileObject->getBasename('.' . $fileObject->getExtension()));
 					self::$presetFiles[$name] = $fileObject;
 				}
+			}
+			// check if we have any config file
+			if(empty(self::$presetFiles) && empty(self::$configFiles)) {
+				Logger::fatalError(Translations::get('config_no_file_found', array(ROOT . self::DIRNAME)));
 			}
 			return self::$files;
 		}
