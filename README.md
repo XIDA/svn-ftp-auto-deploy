@@ -22,7 +22,7 @@ The purpose of this project is to make a one-click deploy after making an SVN co
 ###Updates###
 
 **16th October 2014**
-- added option to version databases too
+- [added option to version databases too] (https://github.com/XIDA/svn-ftp-auto-deploy/wiki/Database-Backup-&-versioning)
 - database backup before updating
 
 ###Support###
