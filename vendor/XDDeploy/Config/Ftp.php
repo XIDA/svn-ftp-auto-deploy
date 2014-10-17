@@ -15,7 +15,7 @@
 		 */
 		protected function validateConfig() {
 			$valid = true;
-			if(!$this->getPassword()) {
+			if($this->getPassword() === null) {
 				$valid = false;
 				Logger::error("Property 'ftp->password' is required.");
 			}

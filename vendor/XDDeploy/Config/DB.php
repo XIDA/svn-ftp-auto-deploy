@@ -14,21 +14,21 @@
 		 */
 		protected function validateConfig() {
 			$valid = true;
-			if(!$this->getPassword()) {
+			if($this->getPassword() === null) {
 				$valid = false;
-				Logger::error("Property 'ftp->password' is required.");
+				Logger::error("Property 'db->password' is required.");
 			}
 			if(!$this->getServer()) {
 				$valid = false;
-				Logger::error("Property 'ftp->server' is required.");
+				Logger::error("Property 'db->server' is required.");
 			}
 			if(!$this->getUser()) {
 				$valid = false;
-				Logger::error("Property 'ftp->user' is required.");
+				Logger::error("Property 'db->user' is required.");
 			}
 			if(!$this->getName()) {
 				$valid = false;
-				Logger::error("Property 'ftp->user' is required.");
+				Logger::error("Property 'db->name' is required.");
 			}
 			return $valid;
 		}
