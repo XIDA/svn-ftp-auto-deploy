@@ -1,4 +1,4 @@
-svn-ftp-auto-deploy
+SVN to FTP Deploy tool
 ===================
 
 php script to facilitate automatic deploy from SVN to FTP.
