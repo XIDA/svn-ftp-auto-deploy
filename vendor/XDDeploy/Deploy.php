@@ -62,7 +62,7 @@
 		private function checkFtpVersion(Config\Config $config, Ftp $ftp) {
 			$ftpVer			= $ftp->getCurrentVersion();
 			if(!isset($ftpVer) || $ftpVer === false) {
-				Logger::warning(Translations::get('version_ftp_not_found', array($config->getVersionFile())));
+				Logger::userInput(Translations::get('version_ftp_not_found', array($config->getVersionFile())));
 				if(CLI::userInput(array('y', 'yes', 1)) === false) {
 					Logger::fatalError("ABORTING!");
 				}
@@ -83,7 +83,7 @@
 		private function checkSvnVersion(Config\Config $config, Svn $svn, $version = null) {
 			$svnLatestVer	= $svn->getCurrentVersion();
 			if(isset($version)) {
-				Logger::warning(Translations::get('version_input', array($svnLatestVer, $config->getName())));
+				Logger::userInput(Translations::get('version_input', array($svnLatestVer, $config->getName())));
 				// wait for the user to input the version
 				$version	= CLI::userInput(range(1, $svnLatestVer));
 				if($version === false) {
