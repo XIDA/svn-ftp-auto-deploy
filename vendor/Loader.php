@@ -62,7 +62,7 @@
 		 */
 		private function setupPHPSettings() {
 			// Default timezone of server
-			date_default_timezone_set('UTC');
+			//date_default_timezone_set('UTC');
 
 			// iconv encoding
 			// iconv_set_encoding("internal_encoding", "UTF-8");
