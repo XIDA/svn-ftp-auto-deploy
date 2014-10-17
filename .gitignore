@@ -5,4 +5,4 @@ deploy.ver
 configs/project_*
 logs/*
 dbbackup/*
-log/log.txt
+log/*
