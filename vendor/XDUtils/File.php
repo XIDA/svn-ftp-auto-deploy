@@ -30,7 +30,7 @@
 		}
 
 		/**
-		 *	Get a list of all directories in specified path (non-recursive!)
+		 *	Get a list of all files in a directoy (non-recursive!)
 		 *
 		 *	@param	string			$path		Path with ending slash
 		 *
@@ -82,6 +82,24 @@
 			if(!file_exists(dirname($file))) {
 				@mkdir(dirname($file), 0777, true);
 			}
+		}
+
+		/**
+		 *	Save string to file
+		 *
+		 *	@param	string		$string			String to save
+		 *	@param	string		$file			Path to file
+		 *
+		 *	@return boolean		TRUE on success, FALSE otherwise
+		 */
+		public static function saveStringToFile($string, $file) {
+			self::createDirectoryForFile($file);
+			if(is_writeable(dirname($file))) {
+				file_put_contents($file, $string);
+				chmod($file, 0777);
+				return true;
+			}
+			return false;
 		}
 
 		/**

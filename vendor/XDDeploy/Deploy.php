@@ -52,6 +52,49 @@
 		 *	Deploy to ftp server
 		 *
 		 *	@param	Config\Config	$config
+		 *	@param	Ftp				$ftp
+		 *
+		 *	@return int
+		 */
+		private function checkFtpVersion(Config\Config $config, Ftp $ftp) {
+			$ftpVer			= $ftp->getCurrentVersion();
+			if(!isset($ftpVer) || $ftpVer === false) {
+				Logger::warning(Translations::get('version_ftp_not_found', array($config->getVersionFile())));
+				if(CLI::userInput(array('y', 'yes', 1)) === false) {
+					Logger::fatalError("ABORTING!");
+				}
+				$ftpVer = 0;
+			}
+			return $ftpVer;
+		}
+
+		/**
+		 *	Get latest version from svn and checks if the user selected a version
+		 *
+		 *	@param	Config\Config	$config
+		 *	@param	Svn 			$svn
+		 *	@param	int/null			$version
+		 *
+		 *	@return int
+		 */
+		private function checkSvnVersion(Config\Config $config, Svn $svn, $version = null) {
+			$svnLatestVer	= $svn->getCurrentVersion();
+			if(isset($version)) {
+				Logger::warning(Translations::get('version_input', array($svnLatestVer, $config->getName())));
+				// wait for the user to input the version
+				$version	= CLI::userInput(range(1, $svnLatestVer));
+				if($version === false) {
+					Logger::fatalError(Translations::get('version_not_in_range', array($svnLatestVer)));
+				}
+				return $version;
+			}
+			return $svnLatestVer;
+		}
+
+		/**
+		 *	Deploy to ftp server
+		 *
+		 *	@param	Config\Config	$config
 		 *	@param	string			$version	Default: the newest version.
 		 */
 		private function deploy(Config\Config $config, $version = null) {
@@ -60,49 +103,32 @@
 			$ftp	= new Ftp($fs, $config);
 
 			// get the current active revisions
-			$ftpVer			= $ftp->getCurrentVersion();
-			$svnLatestVer	= $svn->getCurrentVersion();
+			$versionFrom	= $this->checkFtpVersion($config, $ftp);
+			$versionTo		= $this->checkSvnVersion($config, $svn, $version);
 
-			if(!isset($ftpVer) || $ftpVer === false) {
-				Logger::warning(Translations::get('version_ftp_not_found', array($config->getVersionFile())));
-				if(CLI::userInput(array('y', 'yes', 1)) === false) {
-					Logger::fatalError("ABORTING!");
-				}
-				$ftpVer = 0;
-			}
+			Logger::info(Translations::get('version_ftp', array($versionFrom)));
+			Logger::info(Translations::get('version_svn', array($versionTo)));
 
-			if(isset($version)) {
-				Logger::warning(Translations::get('version_input', array($svnLatestVer, $config->getName())));
-
-				// wait for the user to input the version
-				$version	= CLI::userInput(range(1, $svnLatestVer));
-				if($version === false) {
-					Logger::fatalError(Translations::get('version_not_in_range', array($svnLatestVer)));
-				}
-			} else {
-				$version = $svn->getCurrentVersion();
-			}
-
-			Logger::info(Translations::get('version_ftp', array($ftpVer)));
-			Logger::info(Translations::get('version_svn', array($version)));
-
-			if ($config->isDebug()) {
-				var_dump($ftpVer, $version, $config);
-				exit;
-			}
-
-			if ($version != $ftpVer) {
+			if ($versionTo != $versionFrom) {
 				Logger::notice('collecting changed files..');
-				$changes = $svn->checkoutChanges($version, $ftpVer);
+				$files = $svn->checkoutChanges($versionTo, $versionFrom);
 
-				Logger::warning('found ' . (count($changes['files'])) . ' files / directories that changed and ' . (count($changes['delFiles'])) . ' files to delete');
+				Logger::warning('found ' . (count($files['changed'])) . ' files / directories that changed and ' . (count($files['deleted'])) . ' files to delete');
 
 				// Create a .ver file
-				$fs->addSvnVersion($version);
+				$fs->addSvnVersion($versionTo);
 
-				$changes['files'][] = $config->getVersionFile();
+				// we should create a changes object
+				// instead of creating such arrays
+				// or upload the version file manually
+				// via a new function $ftp->upload()
+				$files['changed'][$config->getVersionFile()] = array(
+					'path' => $config->getVersionFile(),
+					'tempPath' => $fs->getTempFolder() . $config->getVersionFile(),
+					'svnPath' => ''
+				);
 
-				$ftp->putChanges($changes);
+				$ftp->putChanges($files);
 				Logger::success('done');
 			} else {
 				Logger::success('Nothing to do - Up to date');
@@ -110,61 +136,34 @@
 
 			// db deploy
 			if(isset($config->db)) {
-				$db = new \Zebra_Database();
+				$folder			= $svn->checkout($config->db->getRevisionFolder());
+				$revisionFiles	= File::getDirectoryList($folder . DS);
+
+				/*
+				foreach($revisionFiles as $file) {
+					echo basename($file);
+				}
+
+				// connect to db
+				$db = new \XDUtils\Database();
 				$db->connect(
 					$config->db->getServer(),
 					$config->db->getUser(),
 					$config->db->getPassword(),
 					$config->db->getName()
 				);
-
 				$db->set_charset();
 
+				// backup current database
+				Logger::info('[DB] Start Backup');
+				$db->backupDatabase(ROOT . DS . 'dbbackup' . DS . 'backup-' . $config->db->getName() . '-' . time() . '.sql');
+				Logger::success('[DB] Backup done');
 
-				// backup
-				/*
-				$tables = $db->get_tables();
+				// deploy new revisions to db
 
-				$sql = '';
 
-				//cycle through
-				foreach($tables as $table) {
-					$sql .= 'DROP TABLE IF EXISTS ' . $table . ';';
-
-					$db->query('SHOW CREATE TABLE `' . $table . '`');
-					$result = $db->fetch_assoc_all();
-
-					$sql .= PHP_EOL . PHP_EOL . $result[0]['Create Table'] . ';' . PHP_EOL . PHP_EOL;
-
-					$db->select('*', $table);
-					$rows = $db->fetch_assoc_all();
-
-					$sql .= 'INSERT INTO `' . $table . '` VALUES' . PHP_EOL;
-
-					$rowCount = count($rows);
-					$i = 0;
-					foreach($rows as $row) {
-						$valueCount = count($row);
-						$j = 0;
-						$sql .= '(';
-						foreach($row as $value) {
-							$sql .= "'" . $db->escape($value) . "'";
-							if (++$j !== $valueCount) {
-								$sql .= ',';
-							}
-						}
-						$sql .= ((++$i === $rowCount) ? ');' : '),') . PHP_EOL;
-					}
-					$sql.= PHP_EOL . PHP_EOL;
-				}
-
-				//save file
-				$file = ROOT . DS . 'dbbackup' . DS . 'db-backup-' . time() . '-' . (md5(implode(',', $tables))).'.sql';
-				File::createDirectoryForFile($file);
-				file_put_contents($file, $sql);
 				*/
-				//$cmd = 'svn export file:///var/svn/repos dbchanges';
-				//exec($cmd);
+
 			}
 
 			$fs->removeTempFolder();

@@ -26,13 +26,19 @@
 			}
 		}
 
-		private function getFileNameWithoutSVNUrl($fileUrl) {
+		private function getPathWithoutSVNUrl($fileUrl) {
+			return str_replace($this->getRepositoryUrl(), "", $fileUrl);
+		}
 
-			// although each of this variables is cleaned by itself already
-			// we need to clean the combination of the 2 again because if the subfolder is empty in the config
-			// then this will result in 2 slashes
-			$cleanedPath = File::getCleanedPath($this->config->svn->getRoot() . $this->config->svn->getSubfolder());
-			return str_replace($cleanedPath, "", $fileUrl);
+		private function getTempPathForFile($file) {
+			return $this->fs->getTempFolder() . $this->getPathWithoutSVNUrl($file);
+		}
+
+		public function checkout($path) {
+			Logger::notice('[SVN] export path: ' . $path);
+			$cmd = 'svn export ' . $this->loginString . '--force ' . $this->getRepositoryUrl() . $path . ' ' . $this->fs->getTempFolder() . $path;
+			exec($cmd);
+			return $this->fs->getTempFolder() . $path;
 		}
 
 		public function checkoutChanges($targetRev, $rVer) {
@@ -40,29 +46,24 @@
 			//e cho '...' . PHP_EOL;
 			//v ar_dump($changes);
 
-			Logger::info('exporting files from svn');
+			Logger::info('[SVN] exporting files');
 
-			foreach ($changes['files'] as $f) {
+			foreach ($changes['changed'] as $file) {
 				//$path	 = $this->config->svn->getRoot() . $f;
+				Logger::notice('[SVN] exporting ' . $file['path'] . '.. ');
 
-				$file = $this->getFileNameWithoutSVNUrl($f);
-				Logger::notice('exporting ' . $file . '.. ');
-				//$file = substr($f, strlen($this->config->svn->getSubfolder()) - 1);
-				//e cho "file: " . $file . PHP_EOL;
-				$target = $this->fs->getTempFolder() . $file;
-				//e cho 'target: ' . $target . '<--' . PHP_EOL;
-				//var_dump($target, $file, $f, $path); exit;
 				// Ensure Directory Exists
-				File::createDirectoryForFile($target);
+				File::createDirectoryForFile($file['tempPath']);
 
-				$cmd = 'svn export ' . $this->loginString . '--force ' . $f . '@' . $targetRev . ' ' . $target;
+				$cmd = 'svn export ' . $this->loginString . '--force ' . $file['svnPath'] . '@' . $targetRev . ' ' . $file['tempPath'];
 				//e cho 'cmd: ' . $cmd . '<--' . PHP_EOL;
-				Logger::notice('..done');
 				exec($cmd);
+				Logger::notice('[SVN] exporting ' . $this->getPathWithoutSVNUrl($file['path']) . ' done');
 			}
 
-			$svn_ver = $this->getSvnVersion();
-			$this->fs->addSvnVersion($svn_ver);
+			// MM: svn version file will be added later in Deploy.php
+			//$svn_ver = $this->getSvnVersion();
+			//$this->fs->addSvnVersion($svn_ver);
 
 			return $changes;
 		}
@@ -80,12 +81,16 @@
 			return false;
 		}
 
-		protected function getRecentChanges($sVer, $rVer) {
-			$raw_log = $this->getChangeLog($sVer, $rVer);
+		private function getRecentChanges($sVer, $rVer) {
+			$xml = $this->getChangeLog($sVer, $rVer);
+			return $this->getChangeArr($xml);
+		}
 
-			$changes = $this->getChangeArr($raw_log);
-
-			return $changes;
+		public function getRepositoryUrl() {
+			// although each of this variables is cleaned by itself already
+			// we need to clean the combination of the 2 again because if the subfolder is empty in the config
+			// then this will result in 2 slashes
+			return File::getCleanedPath($this->config->svn->getRoot() . $this->config->svn->getSubfolder());
 		}
 
 		public function getCurrentVersion() {
@@ -94,102 +99,101 @@
 
 		protected function getSvnVersion() {
 			$cmd		= 'svn info --xml ' . $this->loginString . $this->config->svn->getRoot();
-			$result		= shell_exec($cmd);
-			$xml		= new \SimpleXMLElement($result, LIBXML_NOERROR + LIBXML_ERR_FATAL + LIBXML_ERR_NONE);
-			if(!$xml) {
-				Logger::fatalError('SVN ERROR!');
-			}
+			$xml		= $this->getXMLForCommand($cmd);
 			return (int) $xml->entry['revision'];
 		}
 
-		protected function getChangeLog($targetVer, $ftpVersion) {
-			// We want the subfolder here because we only need to export
-			// the files that should be uploaded.
-			$repo = $this->config->svn->getRoot() . $this->config->svn->getSubfolder();
+		private function getXMLForCommand($cmd) {
+			$result		= shell_exec($cmd);
+			// @todo error handling
+			// output can be something like 'svn: EXXXX'
+			//p rint_r($result);
+			$xml		= new \SimpleXMLElement($result, LIBXML_NOERROR + LIBXML_ERR_FATAL + LIBXML_ERR_NONE);
+			if(!$xml) {
+				Logger::fatalError('SVN ERROR! Command: ' . $cmd);
+			}
+			return $xml;
+		}
 
+
+
+		private function getChangeLog($targetVer, $ftpVersion) {
 			//check if the file is there at all
-			$cmd = 'svn log ' . $this->loginString . '-r 1:HEAD --limit 1 ' . $repo;
+			$cmd = 'svn log --xml ' . $this->loginString . '-r 1:HEAD --limit 1 ' . $this->getRepositoryUrl();
+			$xml = $this->getXMLForCommand($cmd);
+			$availableRevision = (int) $xml->logentry['revision'];
 
-
-			$exec = exec($cmd, $out);
-
-			// this happens if your desired path isn't in the svn anymore
-			// for example if the svn subdir was deleted
-			if (sizeOf($out) == 0) {
-				Logger::error('there is a problem with the path you a trying to check out');
-				Logger::error('use the following command to find out what\'s wrong');
-				Logger::info($cmd);
-				exit;
+			if ($availableRevision > $targetVer) {
+				Logger::fatalError('you are trying to update to revision ' . $targetVer . ' but the first revision of your svn path is ' . $availableRevision);
 			}
 
-			// we have to check if the svn path is available at the desired revision
-			// we use svn log for that and the output looks like this
-			// r41345 | bk | 2014-09-04 14:57:16 +0200 (Do, 04 Sep 2014) | 1 line\n\nmega changes\n
-			// so after the r we will find the revision number, let's use regex
-			$re						 = "/r([0-9]*) \\|/";
-			preg_match($re, $out[1], $matches);
-			// matches[1] contains the revision number
-			$firstRevisionOfSVNPath	 = $matches[1];
-
-			if ($firstRevisionOfSVNPath > $targetVer) {
-				Logger::error('you are trying to update to revision ' . $targetVer . ' but the first revision of your svn path is ' . $firstRevisionOfSVNPath);
-				Logger::error('use the following command to find out what\'s wrong');
-				Logger::info($cmd);
-				exit;
-			}
-
-			$cmd = 'svn diff ' . $this->loginString . $repo . ' --summarize -r ' . $ftpVersion . ':' . $targetVer;
-			//e cho $cmd . PHP_EOL;
-
-			$out	 = null;
-			$return	 = null;
-			$exec	 = exec($cmd, $out);
-
-			return $out;
+			// get diff between versions
+			$cmd = 'svn diff --xml ' . $this->loginString . $this->getRepositoryUrl() . ' --summarize -r ' . $ftpVersion . ':' . $targetVer;
+			return $this->getXMLForCommand($cmd);
 		}
 
-		protected function getChangeArr($lines) {
-			$delFiles	 = array();
-			$files		 = array();
+		/**
+		 *	Get changes from svn output xml
+		 *
+		 *	@param	\SimpleXMLElement $xml
+		 *
+		 *	XML Example
+		 *	<diff>
+		 *		<paths>
+		 *			<path item="deleted" props="none" kind="file">
+		 *				https://url.to/repository/folder/file.example
+		 *			</path>
+		 *			..
+		 *		</paths>
+		 *	</diff>
+		 *
+		 *	@return array
+		 */
+		private function getChangeArr(\SimpleXMLElement $xml) {
+			$files		 = array(
+				'deleted'	=> array(),
+				'changed'	=> array(),
+				'other'		=> array()
+			);
 
-			$repo	 = $this->config->svn->getRoot() . $this->config->svn->getSubfolder();
-			$repo	 = rtrim($repo, DS);
+			foreach($xml->paths->path as $file) {
+				// extract file path
+				$svnPath	= $file->__toString();
+				$path		= $this->getPathWithoutSVNUrl($svnPath);
+				$tempPath	= $this->getTempPathForFile($path);
 
-			$totLines = count($lines);
-			for ($i = 0; $i < $totLines; $i++) {
-				//e cho "\nInside FOR i = $i";
-				$curLine = $lines[$i];
-				//remove \r and \n
-				$curLine = str_replace("\r", "", $curLine);
-				$curLine = str_replace("\n", "", $curLine);
+				// get the current type
+				$type = (string) $file['item'];
 
-				$parts	 = explode(" ", $curLine);
-				$sts	 = $parts[0];
-				$file	 = $parts[7];
-				$file	 = rtrim($file, DS);
-
-				//if the file url is the same as the repo url, we remove it
-				if ($file == $repo) {
+				// if path is in ignore list, or the repository itself ignore them
+				if($this->isInIgnoreList($path)
+					|| $file == rtrim($this->getRepositoryUrl(), DS)) {
 					continue;
 				}
 
-				if ($this->isInIgnoreList($this->getFileNameWithoutSVNUrl($file))) {
-					continue;
-				}
+				// file info to reduce replaces in other classe
+				$fileInfo = array(
+					'tempPath'	=> $tempPath,
+					'path'		=> $path,
+					'svnPath'	=> $svnPath
+				);
 
-				if ($sts == 'D') {
-					$delFiles[] = $file;
-				} else {
-					$files[] = $file;
+				switch($type) {
+					case 'modified':
+					case 'added':		// file to upload
+						// set array key to have every file only once
+						$files['changed'][$path] = $fileInfo;
+					break;
+					case 'deleted':		// file to delete
+						// set array key to have every file only once
+						$files['deleted'][$path] = $fileInfo;
+					break;
+					default:			// files where the svn properties changed
+						$files['other'][$path] = $fileInfo;
+					break;
 				}
 			}
-			//e cho "\r\n".'Completed SVN Parsing'."\r\n";
-
-			$returnArray			 = array();
-			$returnArray['files']	 = array_unique($files);
-			$returnArray['delFiles'] = array_unique($delFiles);
-
-			return $returnArray;
+			return $files;
 		}
-
 	}
+?>

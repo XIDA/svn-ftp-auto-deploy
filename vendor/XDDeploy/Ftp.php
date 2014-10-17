@@ -1,7 +1,6 @@
 <?php
 	namespace XDDeploy;
 	use XDUtils\Logger;
-	use XDUtils\File;
 
 	class Ftp {
 
@@ -62,74 +61,62 @@
 			return $data;
 		}
 
-		private function getSourceForFile($change) {
-			$cleanedPath = File::getCleanedPath($this->config->svn->getRoot() . $this->config->svn->getSubfolder());
-			$source	 = str_replace($cleanedPath, "", $change);
-			return $this->fs->getTempFolder() . $source;
+
+
+		private function getDestinationForFile($path) {
+			return $this->config->ftp->getRoot() . $path;
 		}
 
-		private function getDestinationForFile($change) {
-			$cleanedPath = File::getCleanedPath($this->config->svn->getRoot() . $this->config->svn->getSubfolder());
-			return $this->config->ftp->getRoot() . str_replace($cleanedPath, "", $change);
-		}
-
-		public function putChanges($changes) {
+		public function putChanges($files) {
 			$conn_id = $this->ftpGetConnection();
 			//e cho ftp_pwd($conn_id);exit;
 
-			foreach ($changes['files'] as $change) {
-				// We want to strip the svn's subfolder from the change.
-				// because that subfolder is exported to the $temp folder.
-				$source		 = $this->getSourceForFile($change);
-				//e cho 'source: ' . $source . PHP_EOL;
+			foreach ($files['changed'] as $file) {
 				// The ftp destination directory.
-				$destination = $this->getDestinationForFile($change);
-				echo 'destination: ' . $destination . PHP_EOL;
+				$destination = $this->getDestinationForFile($file['path']);
+				//e cho 'destination: ' . $destination . PHP_EOL;
 
-				if (is_dir($source)) {
+				if (is_dir($file['tempPath'])) {
 					$this->ftpGoDir($conn_id, $destination);
 				} else {
 					$this->ftpGoDir($conn_id, dirname($destination));
 				}
 
 				//e cho 'source: ' . $source . PHP_EOL;
-				if (is_dir($source)) {
+				if (is_dir($file['tempPath'])) {
 					Logger::notice('created directory ' . $destination);
 					continue;
 				}
 
 				// upload the file
-				$this->log('Source: ' . $source);
-				$this->log('Destination: ' . $source);
+				$this->log('Source: ' . $file['tempPath']);
+				$this->log('Destination: ' . $destination);
 
 				$i = 0;
 				// retry uploading..
 				while($i <= $this->config->ftp->getUploadRetries()) {
 					$i++;
-					Logger::info('uploading ' . $destination . ' ... ');
-					$upload = ftp_put($conn_id, basename($destination), $source, FTP_BINARY);
+					Logger::info('[FTP] uploading ' . $destination . ' ... ');
+					$upload = ftp_put($conn_id, basename($destination), $file['tempPath'], FTP_BINARY);
 
 					// check upload status
 					if (!$upload) {
-						Logger::warning('FTP upload has failed! ( ' . $upload . ' ) Try: ' . $i);
+						Logger::warning('[FTP] upload has failed! ( ' . $upload . ' ) Try: ' . $i);
 						// reconnect and try to upload again
 						$conn_id = $this->ftpGetConnection();
 						continue;
 					} else {
 						//e cho "Uploaded $source to $destination <br />";
-						Logger::success('done', false, true);
+						Logger::success('[FTP] done', false, true);
 						break;
 					}
 				}
 			}
 
-			if ($changes['delFiles']) {
-				foreach ($changes['delFiles'] as $change) {
-					$destination = $this->getDestinationForFile($change);
-					Logger::info('deleting ' . $destination);
-
-					$source = $this->getSourceForFile($change);
-
+			if (isset($files['deleted'])) {
+				foreach ($files['deleted'] as $file) {
+					$destination = $this->getDestinationForFile($file['path']);
+					Logger::info('[FTP] deleting ' . $destination);
 					$this->ftpRecursiveDelete($conn_id, $destination);
 				}
 			}
@@ -261,3 +248,4 @@
 		}
 
 	}
+?>
