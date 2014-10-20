@@ -16,18 +16,25 @@
 		private static $logToFile = true;
 
 		/**
+		 *	Stores if debug logs are enabled
+		 *
+		 *	@var boolean
+		 */
+		private static $logDebug = false;
+
+		/**
 		 *	Stores if logging to command line is enabled
 		 *
 		 *	@var boolean
 		 */
-		private static $logToCli = true;
+		private static $logToCli = false;
 
 		/**
 		 *	Stores if colorize of logs is enabled
 		 *
 		 *	@var boolean
 		 */
-		private static $logInColors = true;
+		private static $logInColors = false;
 
 		/**
 		 *	The log dir path
@@ -62,6 +69,15 @@
 		}
 
 		/**
+		 *	Enable/Disable debug logs
+		 *
+		 *	@param	boolean		$value
+		 */
+		public static function setLogDebug($value) {
+			self::$logDebug = (boolean) $value;
+		}
+
+		/**
 		 *	Enable/Disable colorize of logs on command line
 		 *
 		 *	@param	boolean		$value
@@ -90,7 +106,7 @@
 			}
 		}
 
-		
+
 
 		/**
 		 *	Logs a fatal error and exit application
@@ -144,7 +160,9 @@
 		 *	@param	string		$t
 		 */
 		public static function debug($t = '') {
-			self::l('[DEBUG] ' . $t, 'light_gray');
+			if(self::$logDebug) {
+				self::l('[DEBUG] ' . $t, 'light_gray');
+			}
 		}
 
 

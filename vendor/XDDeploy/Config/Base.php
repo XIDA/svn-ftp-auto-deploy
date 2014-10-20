@@ -22,15 +22,13 @@
 		 *
 		 *	@var boolean
 		 */
-		private $isPreset;
+		private $isPreset = false;
 
 		/**
 		 *	Setup config object from an input array
 		 *
 		 *	@param	array		$data		Configuration array from file
 		 *	@param	boolean		$preset		Is this a preset configuration object
-		 *
-		 *	@return \XDDeploy\Config\Base
 		 */
 		protected function __construct($data, $preset = false) {
 			$this->data		= $data;
@@ -78,6 +76,16 @@
 				return $this->data[$name];
 			}
 			return null;
+		}
+
+		/**
+		 *	Set a config value.
+		 *
+		 *	@param	string		$name		Name of the config value
+		 *	@param	mixed		$value		Value of the config
+		 */
+		protected function setValue($name, $value) {
+			$this->data[$name] = $value;
 		}
 
 		/**

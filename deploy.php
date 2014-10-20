@@ -1,5 +1,7 @@
 <?php
 	use XDUtils\Logger;
+	use GetOptionKit\OptionCollection;
+	use GetOptionKit\OptionParser;
 
 	error_reporting(E_ALL);
 
@@ -14,26 +16,46 @@
 		)
 	);
 
-	$options = (getopt("c::v::"));
-	$config	 = null;
-	$version = null;
-
-	// checking command line parameters
-	if(sizeOf($options) > 0 && isset($options['c'])) {
-		$config	 = $options['c'];
-		if(isset($options['v'])) {
-			$version = $options['v'];
-		}
-	} else {
-		if(isset($argv[1])) {
-			$config = $argv[1];
-		}
-		if(isset($argv[2])) {
-			$version = $argv[2];
-		}
-	}
-
+	// configure logger
 	Logger::setLogFileDir(ROOT . 'log');
 	Logger::setLogInColors(true);
-	new \XDDeploy\Deploy($config, $version);
+	Logger::setLogToCli(true);
+
+	// setup CLI options
+	$specs = new OptionCollection();
+	$specs->add('c|config:', 'Config name. If not specified the application will give you a list to choose a config name from.')->isa('String');
+	$specs->add('v|version', 'Version. If specified the application will ask you for the version number on each deploy.')->isa('Boolean');
+	$specs->add('t|test', 'Enable test mode. No FTP File/DB will be changed.')->isa('Boolean');
+	$specs->add('d|debug', 'Enable debug mode.');
+
+	$specs->add('h|help', 'Show help');
+	$parser		= new OptionParser($specs);
+	$printer	= new GetOptionKit\OptionPrinter\ConsoleOptionPrinter;
+
+	try {
+		// try to parse the options..
+	    $result		= $parser->parse($argv)->toArray();
+
+		// show debug logs
+		if(isset($result['debug'])) {
+			Logger::setLogDebug(true);
+		}
+
+		// show command line help
+		if(isset($result['help'])) {
+			die($printer->render($specs));
+		}
+
+		// did the user specify a config name ?
+		$config		= isset($result['config']) ? $result['config'] : null;
+
+		// did the user specify the version parameter
+		$version	= key_exists('version', $result) ? true : null;
+
+		// start deploy!
+		new \XDDeploy\Deploy($config, $version, isset($result['debug']), isset($result['test']));
+	} catch( Exception $e ) {
+	    echo $e->getMessage() . PHP_EOL;
+		die($printer->render($specs));
+	}
 ?>

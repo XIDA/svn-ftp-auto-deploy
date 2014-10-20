@@ -18,7 +18,7 @@
 		 *	@param	string		$name			Name of the configuration
 		 *	@param	int			$version		Version to deploy
 		 */
-		public function __construct($name = null, $version = null) {
+		public function __construct($name = null, $version = null, $debug = false, $test = false) {
 			// setup translations
 			Translations::setPath(dirname(__FILE__) . DS . 'resources');
 			Logger::notice(Translations::get('welcome'));

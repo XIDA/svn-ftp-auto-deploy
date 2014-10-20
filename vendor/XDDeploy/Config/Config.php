@@ -109,6 +109,15 @@
 		}
 
 		/**
+		 *	Test mode
+		 *
+		 *	@return boolean
+		 */
+		public function isTest() {
+			return (boolean) $this->getValue('test');
+		}
+
+		/**
 		 *	Execute after deploy commands
 		 *
 		 *	@return array
