@@ -8,11 +8,15 @@
 	// Absolute path to the root folder
 	define('ROOT', realpath(__DIR__) . '/');
 
-	require(ROOT . 'vendor/Loader.php');
+	require(ROOT . 'Loader.php');
 	// add non namespaced classes
-	new \Loader(
+	new \XD\Loader(
 		array(
-			'Zebra_Database' => '/stefangabos/zebra_database/Zebra_Database.php',
+			'Zebra_Database' => 'vendor/stefangabos/zebra_database/Zebra_Database.php',
+		),
+		array(
+			'GetOptionKit' => 'vendor/c9s/GetOptionKit/src/',
+			'XDUtils' => 'vendor/xd'
 		)
 	);
 
