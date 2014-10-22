@@ -1,7 +1,7 @@
 <?php
 	namespace XDDeploy\Config;
 	use XDUtils\Logger;
-	use XDTranslations\Translations;
+	use XDUtils\Translations;
 
 	/**
 	 * 	Base config object

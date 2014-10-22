@@ -3,7 +3,7 @@
 	use XDUtils\Logger;
 	use XDUtils\CLI;
 	use XDUtils\File;
-	use XDTranslations\Translations;
+	use XDUtils\Translations;
 
 	/**
 	 * 	Deploy

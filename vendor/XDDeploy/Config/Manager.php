@@ -3,7 +3,7 @@
 	use XDUtils\File;
 	use XDUtils\CLI;
 	use XDUtils\Logger;
-	use XDTranslations\Translations;
+	use XDUtils\Translations;
 
 	/**
 	 * 	Manages configs
